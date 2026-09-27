@@ -6,6 +6,23 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Rebuilt the launch experience as **System Link**, a continuous systemic
+  puzzle-platformer centered on indirectly steering one persistent clockwork
+  ram, a five-stop passenger cart, and its NPC to a station.
+- Changed ram attacks to visibly telegraph and lock their direction before a
+  committed charge, making player position a predictable control input rather
+  than requiring reaction to continuous homing.
+- Made cart movement deterministic between readable rail stops; cart position
+  now carries the NPC, powers a safety circuit, provides traversal height,
+  arms the final lock, and determines the win state.
+- Added a shared live-rail interaction that kills the player but stuns the ram,
+  an elevated player-strike cut-off, and a ram-only final switch whose result
+  releases the last cart stop.
+- Added a visible danger bay that rejects a premature cart push with NPC alarm,
+  impact feedback, and a clear strategic hint, refining the early “always push
+  right” heuristic without creating an unrecoverable state.
+- Added state-aware rewind checkpoints, NPC reaction poses, objective feedback,
+  new switch/telegraph/alarm sounds, particles, and brief impact camera shake.
 - Expanded the Kinetic Clockwork experiment from one room into a continuous
   three-part rail relay built around the same persistent carriage.
 - Added an opposing ram, a scrolling camera, recovery islands, and an exit
