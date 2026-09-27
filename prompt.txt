@@ -1,0 +1,1263 @@
+You are doing a MAJOR DESIGN + IMPLEMENTATION PASS on an existing Godot prototype.
+
+This is NOT a small patch.
+
+You are allowed to substantially redesign:
+- level flow
+- encounter layout
+- barrel behavior
+- cart behavior
+- NPC objective behavior
+- environmental interactions
+- win condition
+- progression
+- pacing
+- feedback / juice
+- how existing enemies and hazards are reused
+
+However:
+
+DO NOT throw away the existing project and rebuild everything from zero.
+
+Reuse as much existing code, art, animation, sound, player movement, collision setup, enemies, hazards, and scene infrastructure as reasonably possible.
+
+The goal is:
+
+    SAME TECHNICAL FOUNDATION,
+    BUT A SIGNIFICANTLY DIFFERENT GAME DESIGN.
+
+The final prototype should feel like a new systemic puzzle-platformer built from the existing project rather than a lightly edited version of the previous level.
+
+==================================================
+0. FIRST: FULL PROJECT AUDIT
+==================================================
+
+Before implementing anything:
+
+Read the entire project.
+
+Inspect:
+
+- project.godot
+- all gameplay scenes
+- player scripts
+- barrel scripts
+- cart/train scripts
+- NPC scripts
+- enemy scripts
+- hazard scripts
+- projectile scripts
+- interaction logic
+- checkpoints
+- reset logic
+- camera
+- sound
+- particles
+- animation
+- win/lose conditions
+- level geometry
+- collision layers/masks
+- existing tests
+- README / design docs / changelogs if present
+
+Then reconstruct the CURRENT playable experience.
+
+Write a concise internal design audit:
+
+1. What currently happens from spawn to finish?
+2. What systems already exist?
+3. Which systems are reusable?
+4. Which mechanics are redundant?
+5. Which existing mechanics could interact but currently do not?
+6. Where does the current game rely mostly on dexterity?
+7. Where could strategic decisions replace execution difficulty?
+8. Which parts visually or mechanically make the project feel too similar to the old version?
+
+Do not stop after the audit.
+
+After the audit, immediately proceed into redesign and implementation.
+
+==================================================
+1. HIGH-LEVEL DESIGN GOAL
+==================================================
+
+Transform the prototype into a:
+
+    SYSTEMIC REAL-TIME PUZZLE PLATFORMER
+
+The main skill should NOT be:
+
+    execute difficult jumps
+
+The main skill should be:
+
+    understand a small set of interacting rules,
+    manipulate agents and objects,
+    predict consequences,
+    and plan interactions in the correct order.
+
+A player who understands the system should perform much better than a player who simply has strong platforming reflexes.
+
+Keep movement satisfying, but movement is the means of interacting with the system, not the entire challenge.
+
+==================================================
+2. CENTRAL FANTASY
+==================================================
+
+The current prototype contains a useful starting idea:
+
+- player enters the level
+- a barrel attacks/chases the player
+- player can use the barrel as a bounce target/platform
+- player reaches a cart/train car
+- an NPC/person is associated with the cart
+- barrel can push the cart
+- the player needs to somehow get the cart/NPC to the right-side destination
+
+Build the entire redesign around the idea:
+
+    THE THREAT IS ALSO THE TOOL.
+
+More specifically:
+
+    "I do not directly control the important objects.
+     I manipulate the system so that they control each other."
+
+The player should gradually realize:
+
+    My position controls the barrel.
+    The barrel controls the cart.
+    The cart changes the level state.
+    The NPC changes progression.
+    Hazards can affect enemies.
+    Enemies can affect hazards.
+    Previous interactions create new future possibilities.
+
+==================================================
+3. DESIGN INSPIRATION: I WANNA
+==================================================
+
+Use the useful design idea from I Wanna Be The Guy:
+
+    The player's first interpretation of a situation can be wrong.
+
+BUT:
+
+Do NOT simply create arbitrary surprise spikes, invisible traps, or cheap deaths.
+
+Instead use SYSTEMIC MISDIRECTION.
+
+The structure should be:
+
+1. Teach a rule clearly.
+2. Let the player form a heuristic.
+3. Present a situation where blindly applying that heuristic fails.
+4. Make the failure reveal additional information.
+5. On the next attempt, the player changes STRATEGY, not merely timing.
+
+Example:
+
+The player learns:
+
+    "Stand to the right of the cart.
+     Barrel charges right.
+     Barrel pushes cart right."
+
+Then later:
+
+Doing exactly that immediately creates a bad state:
+- cart enters danger
+- useful barrel becomes inaccessible
+- NPC gets stuck
+- player loses the only useful route
+- a hazard activates too early
+etc.
+
+The player realizes:
+
+    "Push right" is not the full rule.
+
+The improved heuristic becomes:
+
+    "Before moving the cart, think about what state I need afterward."
+
+Failures should reveal the real structure of the system.
+
+BAD I-Wanna-style design:
+
+    surprise spike kills player with no useful information
+
+GOOD:
+
+    player's reasonable strategy produces a clear,
+    understandable consequence that teaches something new.
+
+==================================================
+4. DESIGN INSPIRATION: DWARF FORTRESS
+==================================================
+
+Use the useful systemic design principle:
+
+    complexity comes from COMPOSITION,
+    not from a long list of unrelated mechanics.
+
+Do not create 15 new mechanics.
+
+Instead create a small interaction vocabulary.
+
+Prefer rules like:
+
+    Barrel + Cart -> Cart moves
+
+    Barrel + Wall -> Barrel changes direction
+
+    Player + Barrel -> Player bounces / barrel changes state
+
+    Barrel + Hazard -> Barrel becomes stunned / redirected / destroyed
+
+    Enemy + Hazard -> Enemy changes state
+
+    Projectile + Enemy -> Enemy reacts
+
+    Cart + Switch -> Environmental state changes
+
+    Cart + NPC destination -> progression changes
+
+    Stunned enemy + Player -> traversal opportunity
+
+The critical principle:
+
+    A + B -> C
+    and C should then be usable by another rule.
+
+For example:
+
+    Barrel hits cart
+        ->
+    Cart moves under upper platform
+        ->
+    Cart becomes traversal platform
+        ->
+    Player reaches switch
+        ->
+    Switch changes hazard
+        ->
+    Barrel can now travel through previous area
+        ->
+    Barrel pushes cart again
+
+THIS is preferred over:
+
+    Room 1 teaches mechanic A
+    Room 2 teaches mechanic B
+    Room 3 teaches mechanic C
+
+The systems should overlap.
+
+==================================================
+5. DESIGN INSPIRATION: SYSTEMIC ZELDA-LIKE THINKING
+==================================================
+
+Use the principle that objects should have GENERAL PROPERTIES,
+not only one-off puzzle scripts.
+
+Prefer:
+
+    charging object transfers momentum
+
+over:
+
+    "this barrel pushes this specific cart"
+
+Prefer:
+
+    heavy moving object activates pressure trigger
+
+over:
+
+    "when cart reaches x=850, open door"
+
+Prefer:
+
+    hazard damages/stuns all valid actors
+
+over:
+
+    "this hazard only affects player"
+
+When reasonable, use shared interfaces / reusable functions for:
+
+- damage
+- knockback
+- stun
+- push
+- activation
+- state changes
+
+Do not overengineer.
+
+The purpose is to make interactions reusable enough for unexpected combinations to emerge.
+
+==================================================
+6. CORE SYSTEM: PLAYER -> BARREL -> CART -> NPC
+==================================================
+
+This should remain the strongest central interaction chain.
+
+PLAYER POSITION
+    ->
+BARREL BEHAVIOR
+    ->
+BARREL COLLISION
+    ->
+CART POSITION
+    ->
+NPC POSITION / LEVEL STATE
+    ->
+NEW PLAYER OPTIONS
+
+------------------------------
+BARREL
+------------------------------
+
+Redesign the barrel into a predictable but manipulable agent.
+
+Preferred state machine:
+
+IDLE
+    ->
+NOTICE PLAYER
+    ->
+TELEGRAPH
+    ->
+LOCK DIRECTION
+    ->
+CHARGE
+    ->
+COLLISION RESULT
+    ->
+RECOVERY / STUN
+    ->
+IDLE
+
+Important:
+
+The barrel must NOT continuously perfectly home toward the player.
+
+The player needs to be able to intentionally place themselves somewhere,
+observe the telegraph,
+and predict the barrel's path.
+
+During telegraph:
+- readable animation
+- readable sound
+- clear facing / direction indicator if visually appropriate
+
+During charge:
+- commit to direction
+- strong momentum
+- consistent collision behavior
+
+The barrel therefore functions as a controllable environmental force.
+
+==================================================
+7. BARREL SHOULD HAVE MULTIPLE USES
+==================================================
+
+The same barrel should serve several purposes.
+
+At minimum:
+
+USE 1:
+danger / enemy
+
+USE 2:
+bounce target for player traversal
+
+USE 3:
+push cart
+
+Strongly consider one or two additional SYSTEMIC uses if they fit existing project systems:
+
+USE 4:
+hit / stun another enemy
+
+USE 5:
+hit a switch
+
+USE 6:
+be redirected by a wall or bumper
+
+USE 7:
+break a fragile obstacle
+
+USE 8:
+interact with an existing hazard
+
+Do NOT implement all of these automatically.
+
+Inspect current code and choose the 1–2 additions that create the most interesting combinations using existing systems.
+
+==================================================
+8. CART REDESIGN
+==================================================
+
+The cart should no longer feel like a passive escort prop.
+
+Its POSITION should become part of the puzzle state.
+
+The cart can potentially be:
+
+- NPC transport
+- movable platform
+- blocker
+- shield
+- weight
+- temporary bridge
+- obstacle
+- route modifier
+
+Choose only the roles that fit the current level.
+
+The player should sometimes want:
+
+    cart farther right
+
+but sometimes want:
+
+    cart to remain here temporarily
+
+or:
+
+    cart at an intermediate position
+
+This prevents:
+
+    "always push right"
+
+from solving the game.
+
+Cart movement must be deterministic enough for strategy.
+
+Avoid chaotic physics.
+
+Use:
+- controlled step movement
+- constrained physics
+- strong damping
+- snapping to useful positions
+- or another predictable method
+
+whichever best fits the current architecture.
+
+==================================================
+9. NPC REDESIGN
+==================================================
+
+The NPC should have a clear systemic role.
+
+Do NOT create complex companion AI unless already supported.
+
+The NPC can primarily function as:
+
+    OBJECTIVE + STATE KEY
+
+For example:
+
+NPC reaches station A
+    ->
+activates system
+
+NPC reaches station B
+    ->
+opens final gate
+
+NPC/cart position can visually communicate progress.
+
+Optional:
+Give the NPC simple reactions:
+- scared when barrel approaches
+- relief after successful move
+- point / look toward destination
+- react when cart nearly enters danger
+
+This is feedback, not a dialogue system.
+
+==================================================
+10. MAJOR LEVEL REDESIGN
+==================================================
+
+You ARE allowed to significantly rebuild the level layout.
+
+Do not preserve geometry simply because it already exists.
+
+However reuse existing visual assets.
+
+Build ONE continuous level with approximately 5 major interaction beats.
+
+Do not make five disconnected tutorial rooms.
+
+They should feel like one environment whose systems accumulate.
+
+==================================================
+BEAT 1 — THREAT BECOMES TOOL
+==================================================
+
+Player enters / falls into the area.
+
+Barrel threatens player.
+
+Player discovers:
+
+    barrel can be jumped on / bounced from
+
+Use this to access the next area.
+
+Teach through spatial design, not text.
+
+==================================================
+BEAT 2 — TOOL AFFECTS WORLD
+==================================================
+
+Introduce cart + NPC.
+
+Create a natural situation where a barrel charge hits the cart.
+
+Player observes:
+
+    barrel can move cart
+
+Then create a simple intentional version where the player must position themselves correctly.
+
+Teach:
+
+    Player position indirectly controls cart movement.
+
+==================================================
+BEAT 3 — FIRST SYSTEM COMBINATION
+==================================================
+
+Introduce one existing environmental system.
+
+Prefer an existing:
+- spike
+- saw
+- crusher
+- moving platform
+- switch
+- projectile
+- enemy
+- breakable obstacle
+
+Do NOT simply put it next to the puzzle.
+
+Make it interact.
+
+Example possibilities:
+
+BARREL + WALL
+    ->
+reverse direction
+    ->
+CART moves from opposite side
+
+or
+
+BARREL + SPIKE/SAW
+    ->
+barrel stunned
+    ->
+player can safely bounce from it
+
+or
+
+CART + SWITCH
+    ->
+hazard state changes
+
+or
+
+BARREL + ENEMY
+    ->
+enemy stunned
+    ->
+enemy becomes traversal object
+
+Choose based on what already exists.
+
+==================================================
+BEAT 4 — BREAK THE PLAYER'S HEURISTIC
+==================================================
+
+This is critical.
+
+By now player probably believes:
+
+    "Use barrel to push cart right."
+
+Create a situation where that reasonable strategy creates a bad future state.
+
+Examples:
+
+A.
+Cart blocks the only way to reposition the barrel.
+
+B.
+Moving cart too early removes the player's bounce access.
+
+C.
+Cart enters a hazard zone before hazard has been disabled.
+
+D.
+Cart activates a crusher too early.
+
+E.
+NPC reaches intermediate trigger before player is ready.
+
+F.
+Barrel becomes trapped on wrong side.
+
+G.
+Player needs the barrel for vertical traversal before using it to move cart.
+
+The failure should be readable.
+
+The player should think:
+
+    "Oh. I needed to do X first."
+
+NOT:
+
+    "What random thing killed me?"
+
+This should be the main I-Wanna-inspired moment.
+
+==================================================
+BEAT 5 — SYSTEMIC PAYOFF
+==================================================
+
+Final area should use NO major new mechanic.
+
+Instead combine previously learned relationships.
+
+Create a situation with several relevant objects at once, such as:
+
+PLAYER
+BARREL
+CART
+NPC
+HAZARD
+ENEMY / SWITCH
+
+The player should need to plan 3–5 interactions ahead.
+
+Example structure:
+
+1. keep cart in place
+2. bait barrel toward upper route
+3. use barrel as bounce target
+4. activate environmental change
+5. reposition to other side
+6. bait barrel again
+7. barrel pushes cart
+8. cart/NPC reaches destination
+9. level exit becomes accessible
+
+There can be multiple valid solutions if the systems naturally allow them.
+
+Do not force only one exact pixel-perfect scripted sequence.
+
+==================================================
+11. HEURISTIC PROGRESSION
+==================================================
+
+Explicitly design around learned heuristics.
+
+Initial heuristic:
+
+    Barrel = danger.
+
+Then:
+
+    Barrel can also help me move.
+
+Then:
+
+    Barrel can move the cart.
+
+Then:
+
+    My position controls the barrel.
+
+Then:
+
+    I indirectly control the cart.
+
+Then:
+
+    Do not immediately use every available interaction.
+
+Then:
+
+    Object state and position are resources.
+
+Then:
+
+    Plan the order of interactions.
+
+The game should intentionally make some early heuristics incomplete.
+
+Do not invalidate them randomly.
+
+REFINE them.
+
+Example:
+
+Early:
+    "Push cart right."
+
+Later:
+    "Push cart right when the future state will still be useful."
+
+==================================================
+12. RESOURCES WITHOUT INVENTORY
+==================================================
+
+Use spatial / systemic resources instead of introducing inventory.
+
+Possible resources:
+
+- barrel position
+- barrel state
+- cart position
+- cart momentum
+- enemy state
+- safe space
+- route availability
+- player position
+- hazard timing
+- switch state
+
+Treat these as meaningful resources.
+
+Example:
+
+Using the barrel to push the cart means the barrel is now on the other side.
+
+That should matter.
+
+This creates opportunity cost without needing coins/mana/items.
+
+==================================================
+13. FEEDBACK LOOPS
+==================================================
+
+Add simple state loops where useful.
+
+Example:
+
+Barrel:
+
+IDLE
+-> TELEGRAPH
+-> CHARGE
+-> COLLISION
+-> STUN
+-> RECOVER
+-> IDLE
+
+Cart:
+
+REST
+-> PUSHED
+-> MOVING
+-> SNAP/STOP
+-> NEW POSITION
+
+Environment:
+
+INACTIVE
+-> TRIGGERED
+-> ACTIVE
+-> RESET / NEW STATE
+
+Make state readable.
+
+The player should be able to learn by watching.
+
+==================================================
+14. PERFECT INFORMATION / READABILITY
+==================================================
+
+Keep most relevant state observable.
+
+The interesting uncertainty should be:
+
+    "What will these systems do together?"
+
+not:
+
+    "What invisible object is going to kill me?"
+
+Show:
+- hazards
+- barrel
+- cart
+- NPC
+- important destinations
+- major switches
+- enemy state
+
+Avoid hidden arbitrary rules.
+
+==================================================
+15. DEXTERITY VS STRATEGY
+==================================================
+
+Lower unnecessary execution difficulty.
+
+Keep:
+- coyote time
+- jump buffering
+- forgiving bounce detection
+- predictable motion
+- readable attack windup
+
+Avoid:
+- pixel-perfect jumps
+- extremely narrow timing
+- very fast unreadable barrel charges
+- random projectile spam
+- physics chaos
+
+When the player knows the correct plan,
+execution should usually be manageable.
+
+Difficulty should mainly come from:
+
+    deciding what to do and in what order.
+
+==================================================
+16. REUSE OLD MECHANICS SYSTEMICALLY
+==================================================
+
+Search the existing project for good mechanics that can return.
+
+Potential examples if they exist:
+
+- spikes
+- saw
+- crushers
+- moving platforms
+- guard/patrol enemy
+- charging enemy
+- projectile shooter
+- reflectable projectile
+- stun
+- knockback
+- bounce
+- breakable objects
+
+Do NOT simply restore all of them.
+
+Select approximately 2–3 that form the strongest combinations with:
+
+    PLAYER
+    BARREL
+    CART
+    NPC
+
+Examples:
+
+Barrel -> Guard -> Spike
+
+Projectile -> Barrel -> Cart
+
+Cart -> Crusher trigger
+
+Enemy -> Barrel -> stun -> bounce
+
+etc.
+
+The chosen systems should interact across categories.
+
+==================================================
+17. VISUAL IDENTITY / MAKE IT FEEL LIKE A NEW GAME
+==================================================
+
+Without rebuilding the asset pipeline from scratch,
+change presentation enough that this does not feel like merely the previous level extended.
+
+Possible changes:
+
+- reorganize overall level silhouette
+- alter camera framing where appropriate
+- change object placement rhythm
+- change encounter composition
+- change background arrangement
+- alter lighting/tint if easy and compatible
+- use existing assets in new roles
+- create stronger visual landmarks
+- redesign beginning and ending spaces
+- adjust scale / spacing of major rooms
+
+Do NOT destroy functional art just for novelty.
+
+But the new structure should be visually recognizable as a redesigned experience.
+
+==================================================
+18. GAME FEEL / JUICE
+==================================================
+
+After the system works, add useful feedback.
+
+BARREL CHARGE:
+- anticipation animation
+- audio cue
+- dust / particles
+- clear acceleration
+
+BARREL -> CART:
+- strong impact sound
+- brief shake
+- cart squash/jerk if supported
+- dust / sparks
+- NPC reaction
+
+PLAYER -> BARREL:
+- bounce sound
+- squash/stretch or flash
+- reliable upward impulse
+
+STATE CHANGES:
+- visual signal
+- sound
+- animation
+
+SUCCESS:
+- clear NPC arrival response
+- gate/environment transition
+- satisfying finish moment
+
+Do not let polish hide unclear mechanics.
+
+==================================================
+19. RESET / FAILURE DESIGN
+==================================================
+
+Because the game involves state manipulation,
+reset behavior is extremely important.
+
+Implement reliable reset/checkpoint logic.
+
+If the player creates an impossible state:
+
+Prefer:
+- nearby restart
+- quick reset
+- automatic recovery where appropriate
+
+Do not require replaying several minutes because a cart moved incorrectly.
+
+Failure should encourage experimentation.
+
+==================================================
+20. IMPLEMENTATION FREEDOM
+==================================================
+
+This is a major redesign.
+
+You MAY:
+
+- rewrite significant parts of barrel AI
+- rewrite cart behavior
+- significantly rearrange main scene geometry
+- move enemies and hazards
+- change level progression
+- add reusable interaction components
+- alter goal logic
+- adjust player tuning
+- add state machines
+- add feedback systems
+- add checkpoints
+- reconnect old mechanics in new combinations
+
+You SHOULD NOT:
+
+- replace the entire engine architecture
+- build a totally unrelated game
+- add huge amounts of new content
+- create many unrelated mechanics
+- turn the project into a dialogue/story-heavy game
+- build inventory/crafting/RPG systems
+- make dozens of levels
+
+Think:
+
+    substantial redesign of the existing prototype,
+
+not:
+
+    start another project from zero.
+
+==================================================
+21. IMPLEMENTATION PLAN
+==================================================
+
+After audit, create a concrete implementation plan with:
+
+PHASE A — SYSTEM CORE
+- barrel targeting
+- barrel telegraph
+- barrel charge
+- bounce
+- barrel/cart interaction
+- NPC/cart relationship
+
+PHASE B — SHARED INTERACTIONS
+- reusable damage / stun / push / activation behavior
+- reconnect selected existing hazards/enemies
+
+PHASE C — LEVEL REBUILD
+- restructure current main level into systemic progression
+- implement Beats 1–5
+
+PHASE D — STRATEGIC DEPTH PASS
+- identify trivial dominant strategy
+- create one or two situations that force heuristic refinement
+- verify decisions have consequences
+
+PHASE E — FEEDBACK / JUICE
+- animation
+- sound
+- particles
+- camera response
+
+PHASE F — RESET + TESTING
+- restart
+- checkpoint
+- softlock prevention
+- win condition
+- full playthrough
+
+Then execute ALL phases.
+
+Do not merely give the plan.
+
+==================================================
+22. TEST STRATEGIC DEPTH
+==================================================
+
+After implementing, actively test whether the game has a dominant trivial solution.
+
+Ask:
+
+Can player always:
+    stand right -> wait -> push cart right?
+
+If yes:
+redesign encounters.
+
+Can player ignore most environmental interactions?
+
+If yes:
+increase meaningful coupling between systems.
+
+Can a highly skilled platformer simply jump past all strategic content?
+
+If yes:
+adjust geometry / goals.
+
+Does player need to think ahead?
+
+At least one meaningful encounter should require planning the result of an action 2–4 steps into the future.
+
+==================================================
+23. TEST SYSTEMIC INTERACTION COVERAGE
+==================================================
+
+Create a table or notes for implemented interactions:
+
+PLAYER x BARREL
+BARREL x CART
+CART x NPC
+BARREL x ENVIRONMENT
+CART x ENVIRONMENT
+BARREL x ENEMY
+PLAYER x CART
+etc.
+
+For each relevant pair:
+
+- Does interaction exist?
+- Is it meaningful?
+- Does it change state?
+- Can the result feed another interaction?
+
+Do NOT force every pair to interact.
+
+Use this only to find missed opportunities.
+
+==================================================
+24. PLAYTEST THE INTENDED LEARNING CURVE
+==================================================
+
+Reason through a new player's likely mental model.
+
+Expected progression:
+
+"I need to avoid this barrel."
+
+->
+
+"Oh, I can bounce on it."
+
+->
+
+"It moved the cart."
+
+->
+
+"Wait, it attacks toward ME."
+
+->
+
+"So my position determines its direction."
+
+->
+
+"I am effectively steering the cart indirectly."
+
+->
+
+"I shouldn't move it yet."
+
+->
+
+"I need this barrel here first."
+
+->
+
+"If I do this now, that changes what I can do later."
+
+That final realization is the target experience.
+
+==================================================
+25. FINAL QUALITY BAR
+==================================================
+
+The prototype should NOT feel like:
+
+    platformer + random puzzles
+
+It should feel like:
+
+    one coherent system.
+
+The barrel should not feel like one enemy among many.
+
+It should feel like the central force around which the environment is manipulated.
+
+The cart should not feel like an escort prop.
+
+Its position should be part of the game state.
+
+The NPC should not just be decoration.
+
+Its position should matter to progression.
+
+Hazards should not merely hurt the player.
+
+At least some hazards should participate in the broader system.
+
+The final game should have FEWER important rules than objects on screen,
+but those rules should generate many different situations.
+
+==================================================
+26. FINAL DELIVERABLE
+==================================================
+
+When implementation is complete:
+
+1. Run the project / tests available in the repository.
+2. Fix parse errors, broken references, missing nodes, and obvious softlocks.
+3. Verify a complete start-to-finish route.
+4. Do not stop with known critical errors.
+
+Then report:
+
+A. FINAL GAME LOOP
+
+Explain what the player actually does.
+
+B. DESIGN CHANGES
+
+Explain the major differences from the original prototype.
+
+C. SYSTEM RULES
+
+List the small set of reusable systemic rules.
+
+D. HEURISTICS
+
+List:
+- early heuristic
+- how it gets refined
+- final deeper heuristic
+
+E. I WANNA INFLUENCE
+
+Identify the specific moment where player expectation is challenged
+and explain what the failure teaches.
+
+F. DWARF FORTRESS INFLUENCE
+
+Identify at least 3 interaction chains where one result feeds another rule.
+
+G. STRATEGIC DEPTH
+
+Explain why thinking ahead improves performance.
+
+H. EXISTING CONTENT REUSED
+
+List existing code/assets/mechanics retained.
+
+I. MAJOR FILES CHANGED
+
+List scenes/scripts and what changed.
+
+J. PLAYTHROUGH
+
+Give an intended start-to-finish solution.
+
+K. ALTERNATIVE SOLUTIONS
+
+Mention any emergent alternate strategies discovered.
+
+L. REMAINING ISSUES
+
+State any known bugs or weak areas.
+
+==================================================
+MOST IMPORTANT RULE
+==================================================
+
+Do not optimize for:
+
+    MORE MECHANICS.
+
+Optimize for:
+
+    MORE CONSEQUENCES FROM THE SAME MECHANICS.
+
+The desired final experience is:
+
+    At first I was trying to survive the barrel.
+
+    Then I learned to use the barrel.
+
+    Then I learned to control the barrel.
+
+    Then I realized controlling the barrel controls the rest of the level.
+
+    Finally, I started thinking several interactions ahead.
