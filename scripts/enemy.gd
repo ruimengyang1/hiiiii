@@ -6,6 +6,7 @@ signal kinetic_struck(player_speed: float, ram_speed: float)
 signal carriage_hit(ram_speed: float, carriage_speed: float)
 signal wall_rebounded(side: int, incoming_speed: float, outgoing_speed: float)
 signal charge_locked(direction: int)
+signal charge_committed(direction: int)
 signal stunned(duration: float)
 
 const KINETIC_STRIKE_RAM_RETENTION := 0.40
@@ -88,6 +89,8 @@ func _ready() -> void:
 	collision.shape = shape
 	add_child(collision)
 	body_entered.connect(_on_body_entered)
+	if kinetic_mode:
+		add_to_group("demo_heavy")
 
 func _physics_process(delta: float) -> void:
 	if not alive:
@@ -118,7 +121,7 @@ func _physics_process(delta: float) -> void:
 func _update_kinetic_ram(delta: float) -> void:
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	match state:
-		"idle":
+		"idle", "held":
 			velocity_x = move_toward(velocity_x, 0.0, KINETIC_IDLE_FRICTION * delta)
 			cooldown = maxf(0.0, cooldown - delta)
 			if charge_enabled and player != null and cooldown <= 0.0 and absf(player.global_position.x - global_position.x) <= trigger_range:
@@ -132,6 +135,7 @@ func _update_kinetic_ram(delta: float) -> void:
 			if state_time <= 0.0:
 				velocity_x = clampf(velocity_x + facing * charge_impulse, -KINETIC_MAX_SPEED, KINETIC_MAX_SPEED)
 				state = "coast"
+				charge_committed.emit(facing)
 		"coast":
 			velocity_x = move_toward(velocity_x, 0.0, KINETIC_COAST_FRICTION * delta)
 			if absf(velocity_x) < 8.0:
@@ -296,6 +300,23 @@ func wedge_at(at: Vector2) -> void:
 	flash = 0.2
 	queue_redraw()
 
+func hold_at(at: Vector2, settle_time: float = 0.55) -> void:
+	global_position = at
+	velocity_x = 0.0
+	wedged = false
+	charge_enabled = true
+	state = "held"
+	state_time = 0.0
+	cooldown = settle_time
+	flash = 0.16
+	queue_redraw()
+
+func plate_mass() -> float:
+	return 2.0 if wedged or state in ["held", "stunned"] else 0.0
+
+func weight_rect() -> Rect2:
+	return Rect2(global_position - Vector2(10, 10), Vector2(20, 20))
+
 func set_charge_enabled(enabled: bool) -> void:
 	charge_enabled = enabled
 	if not enabled and state == "windup":
@@ -363,10 +384,10 @@ func _draw() -> void:
 					arrow_end + Vector2(-facing * 10.0, -7.0),
 					arrow_end + Vector2(-facing * 10.0, 7.0),
 				]), arrow_color)
-			if kinetic_mode and state in ["stunned", "wedged"]:
+			if kinetic_mode and state in ["stunned", "wedged", "held"]:
 				draw_arc(Vector2.ZERO, 15.0, 0.0, TAU, 16, Color("a9f4dd"), 2.0)
 			draw_rect(Rect2(-10, -10, 20, 20), ink)
-			draw_rect(Rect2(-8, -9, 16, 16), Color("a9f4dd") if state in ["stunned", "wedged"] else steel)
+			draw_rect(Rect2(-8, -9, 16, 16), Color("a9f4dd") if state in ["stunned", "wedged", "held"] else steel)
 			draw_rect(Rect2(-7, 5, 14, 3), brass)
 			draw_rect(Rect2(-2 + facing * 3, -5, 3, 3), Color("f46e5a") if state == "windup" else eye)
 			draw_rect(Rect2(-7, -12, 14, 3), brass)

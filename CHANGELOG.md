@@ -6,6 +6,35 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Reworked all game-facing type with a larger, light-weight monospaced face,
+  crisp pixel alignment, and no heavy shadow so labels remain legible at the
+  native 384×216 resolution.
+- Added a one-second Stage 3 sensor lock: the rotator visibly pauses on target,
+  the sensor turns gold with a shrinking timer bar and numeric countdown, and
+  the HUD tells the player to bait the Can away before rotation resumes.
+- Re-audited the demo's communication path so its premise, exit, actor intent,
+  mechanism causes, target positions, temporary instructions, and success or
+  failure states remain visible without covering active play.
+- Focused the launch experience from seven lessons into a four-level,
+  approximately 4–5 minute first-play target: Redirect, Weight, Timing, Combine.
+- Added a deterministic rolling Boulder with general MOVABLE, HEAVY, BLOCKING,
+  and force-receiver properties; broad weight detection now responds to mass
+  rather than a named puzzle object.
+- Replaced discrete laser impact steps with the signature duration mechanic:
+  the beam rotates continuously while the Can occupies the rotator and freezes
+  at its current angle when the Can leaves.
+- Added fast deterministic sensor platforms, including a final lift that can
+  physically carry a poorly prepared Can into the player's upper charge lane.
+- Added two restrained causal reversals: the Level 2 weight circuit also moves
+  visible cargo through the fan, and the Level 4 sensor lift also changes Can
+  position. Both preserve the same rules on retry.
+- Simplified the main HUD and transitions, removed the seven-stage hint/rank
+  flow, strengthened lock/charge/Boulder/rotator/platform feedback, and kept
+  death or deliberate restart local to the current short level.
+- Added final-demo tests for Can intent and non-tracking lock, rebound, force,
+  Boulder direction/weight, fan activation/lift/release, continuous laser
+  timing, sensor platforms, four solved level states, anti-skip geometry,
+  actual R restart, death recovery, and progression retention.
 - Replaced the launch flow with **Can / Useful Danger**, seven compact stages
   built around reading, baiting, wedging, and redirecting one dangerous Can.
 - Added reusable weight switches, a sustained and visibly animated fan updraft,
