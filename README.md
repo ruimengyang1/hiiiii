@@ -1,68 +1,74 @@
 # Foundry / Future States
 
-A compact action-platformer about playing with a malfunctioning charging robot:
-**bait → evade / bounce → impact → exploit**. Four maintenance bays replace the
-old escort route. No levers, gate sequence, or long return trip.
+One persistent malfunctioning factory. One objective: **escape**. Manipulate a
+predictable charging robot while a Cart, cycling press, weight catwalk and weak
+partition keep affecting the same space.
 
-Open in **Godot 4.7** and run `scenes/foundry.tscn`. Reach each bay’s green door,
-then the final exit. Can still wants to attack you.
+Open in **Godot 4.7** and run `scenes/foundry.tscn`. The entire yard fits one
+576×324 view. The green exit is visible from spawn. There are no room resets,
+levers, delivery tasks or progress checklist.
 
 | Action | Keyboard | Gamepad |
 |---|---|---|
 | Move | A/D or arrows | Left stick / D-pad |
 | Jump | Space | A / Cross |
 | Airborne stomp | J / X | X / Square |
-| Rewind current bay | R | Y / Triangle |
-| Fresh run | Shift+R; R after completion | Y after completion |
+| Rewind whole yard | R | Y / Triangle |
+| Fresh run | Shift+R; R after escape | Y after escape |
 | Pause | Escape | Start |
 | Recall controls | H | — |
 
-Descending onto Can automatically rebounds. J/X connects faster. Ordinary
-contact gives a short 0.38-second stagger; during a committed charge the robot
-keeps charging beneath your rebound. The red arrow locks direction during
-0.55-second anticipation. Can cannot turn after commitment.
+Can searches autonomously, locks a red charge direction for 0.55 seconds and
+commits at 230 px/s. Descending onto it rebounds automatically; J/X connects
+faster. A rebound during a charge preserves its motion. Ordinary stomp causes
+only 0.38 seconds of stagger. Environmental contact creates a safe, solid,
+heavy shell for 3.4 seconds, shown by green eyes and a shrinking bar.
 
-Environmental impacts create the green grounded shell: safe, solid and heavy
-for 3.4 seconds. Plates accept grounded Can or Cart. Ordinary stomp cannot
-supply weight. A shrinking bar shows the shell’s remaining state.
+Cart moves one reversible 100-pixel rail position per impact in about half a
+second. A supports the loft; B supplies nearby bridge weight and catches the
+press; C gives exit-side height while exposing the press and losing weight.
+Ghost roofs show the alternatives. A poor configuration can be reversed.
+Grounded Can can supply the same plate weight. The press's top is rideable,
+its teeth hurt the worker and ground Can, and it keeps cycling.
 
-Cart moves one reversible 80-pixel position per impact in 0.4 seconds. Its three
-positions supply high roof access, bridge weight / press shielding, and forward
-roof access. Ghost roofs and rail symbols show them. The plate is wired to a
-nearby telescoping bridge. Orange weak partitions break permanently from charge
-force; valid upper bypasses also work.
+Weak material accepts strong force from either direction. Breaking it creates
+a permanent low passage; a physical upper bypass is also valid. Escape checks
+only arrival on the green exit's landing. Death returns the worker quickly
+while preserving world changes. R deliberately restores all starting objects.
 
-The final exit needs a real supported landing. Always pushing Cart right does
-not solve it. Complete input-only routes validate durable Cart support and
-Can’s temporary environmental weight while Cart stays forward.
+[THIRD_REDESIGN_SPEC.md](THIRD_REDESIGN_SPEC.md) describes the short design.
+[THIRD_REDESIGN_REPORT.md](THIRD_REDESIGN_REPORT.md) documents three validated
+plans, tradeoffs, heuristic reversals, metrics, screenshots and limitations.
+Automated expert routes take roughly 6–7 seconds. Human fun, first-time length
+and the 5–7 minute target remain unmeasured; there is no forced delay.
 
-[SECOND_REDESIGN_SPEC.md](SECOND_REDESIGN_SPEC.md) contains the short design.
-[SECOND_REDESIGN_REPORT.md](SECOND_REDESIGN_REPORT.md) contains walkthroughs,
-tradeoffs, tests, screenshots and limitations. Human enjoyment and the 6–8 minute
-first-run target are unmeasured. Automated routes finish in 16–18 seconds;
-there is no extra walking or timer to manufacture the intended duration.
+Run `scenes/yard_sandbox.tscn` for the same connected space without escape or
+instructions. Preserved versions:
 
-Run `scenes/impact_lab.tscn` for the objective-free core playground. Preserved:
-
-- `scenes/foundry_legacy.tscn`: first redesign, backed up at `340aed6`.
-- `scenes/kinetic_prototype.tscn`: System Link passenger-Cart prototype.
+- `scenes/foundry_second.tscn`: four-arena redesign, checkpoint `2e1ea7d`.
+- `scenes/impact_lab.tscn`: second redesign's isolated core playground.
+- `scenes/foundry_legacy.tscn`: first redesign, checkpoint `340aed6`.
+- `scenes/kinetic_prototype.tscn`: System Link.
 - `scenes/game.tscn`: original Foundry and Relay Shaft.
 
 ## Verification
 
 ```sh
-godot --headless --path . --fixed-fps 60 --script res://tests/second_core.gd
-godot --headless --path . --fixed-fps 60 --script res://tests/second_systems.gd
-godot --headless --path . --fixed-fps 60 --script res://tests/second_route.gd
-godot --headless --path . --fixed-fps 60 --script res://tests/second_route.gd -- --can
-godot --headless --path . --fixed-fps 60 --script res://tests/second_route.gd -- --high --can
+godot --headless --path . --fixed-fps 60 --script res://tests/third_sandbox.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/third_systems.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/third_route.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/third_route.gd -- --ground
+godot --headless --path . --fixed-fps 60 --script res://tests/third_route.gd -- --force
 ```
 
-Routes use only player inputs after fresh spawn. Core/system checks use explicit
-fixtures. Successful routes write time, charges, impacts, rebounds, grounding,
-reversals, resets, idle and room states to `artifacts/second_redesign/route_*.json`.
-Headless audio is suppressed; graphical play retains generated sounds.
+Routes use only player inputs after fresh spawn. System and sandbox probes use
+explicit fixtures. JSON evidence records completion, charges, impacts, rebounds,
+grounding, reversals, resets, deaths, hits, idle and state traces under
+`artifacts/third_redesign/`. Tests prove consistent interactions and completion,
+not enjoyment.
 
-With graphics, run `tests/capture_second.gd` to regenerate six staged native
-captures in `artifacts/second_redesign/screenshots/`. Historical tests continue
-to target their preserved scenes. Captures are separate from completion evidence.
+With graphics, run `tests/capture_third.gd` for ten staged relationship captures.
+Run `tests/third_route.gd -- --force --capture` for the actual input-only
+signature/fracture/escape captures. Images are in
+`artifacts/third_redesign/screenshots/`. Historical tests target preserved
+scenes and remain runnable.

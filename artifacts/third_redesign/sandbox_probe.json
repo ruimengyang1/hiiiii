@@ -1,0 +1,277 @@
+{
+	"discoveries": [
+		{
+			"can": "(171.8333, 290.0)",
+			"can_state": "charging",
+			"cart": 1,
+			"catwalk": true,
+			"event": "charging rebound",
+			"grounded": false,
+			"player": "(190.0, 271.0)",
+			"seconds": 0.22,
+			"target": 1,
+			"wall_broken": false
+		},
+		{
+			"can": "(216.0, 290.0)",
+			"can_state": "charging",
+			"cart": 1,
+			"catwalk": true,
+			"event": "Cart impact",
+			"grounded": false,
+			"player": "(199.6667, 227.0)",
+			"seconds": 0.42,
+			"target": 2,
+			"wall_broken": false
+		},
+		{
+			"can": "(237.5999, 290.0)",
+			"can_state": "idle",
+			"cart": 2,
+			"catwalk": true,
+			"event": "Cart settled",
+			"grounded": false,
+			"player": "(247.2031, 208.9253)",
+			"seconds": 0.95,
+			"target": 2,
+			"wall_broken": false
+		},
+		{
+			"can": "(253.2667, 290.0)",
+			"can_state": "windup",
+			"cart": 2,
+			"catwalk": false,
+			"event": "lock",
+			"grounded": false,
+			"player": "(296.158, 267.422)",
+			"seconds": 1.68,
+			"target": 2,
+			"wall_broken": false
+		},
+		{
+			"can": "(253.2667, 290.0)",
+			"can_state": "stunned",
+			"cart": 2,
+			"catwalk": false,
+			"event": "grounded",
+			"grounded": true,
+			"player": "(301.3247, 280.422)",
+			"seconds": 1.73,
+			"target": 2,
+			"wall_broken": false
+		},
+		{
+			"can": "(263.0667, 290.0)",
+			"can_state": "stunned",
+			"cart": 2,
+			"catwalk": true,
+			"event": "grounded",
+			"grounded": true,
+			"player": "(310.0, 209.0)",
+			"seconds": 3.55,
+			"target": 2,
+			"wall_broken": false
+		}
+	],
+	"failures": [],
+	"samples": [
+		{
+			"can": "(148.8333, 290.0)",
+			"can_state": "charging",
+			"cart": "(260.0, 284.0)",
+			"catwalk": true,
+			"frame": 0,
+			"player": "(190.0, 248.8472)",
+			"shield": true,
+			"station": 1,
+			"target": 1
+		},
+		{
+			"can": "(171.8333, 290.0)",
+			"can_state": "charging",
+			"cart": "(260.0, 284.0)",
+			"catwalk": true,
+			"frame": 6,
+			"player": "(190.0, 263.7222)",
+			"shield": true,
+			"station": 1,
+			"target": 1
+		},
+		{
+			"can": "(190.9999, 290.0)",
+			"can_state": "charging",
+			"cart": "(260.0, 284.0)",
+			"catwalk": true,
+			"frame": 12,
+			"player": "(190.0, 252.4722)",
+			"shield": true,
+			"station": 1,
+			"target": 1
+		},
+		{
+			"can": "(213.9999, 290.0)",
+			"can_state": "charging",
+			"cart": "(260.0, 284.0)",
+			"catwalk": true,
+			"frame": 18,
+			"player": "(197.0833, 230.0972)",
+			"shield": true,
+			"station": 1,
+			"target": 1
+		},
+		{
+			"can": "(216.0, 290.0)",
+			"can_state": "recover",
+			"cart": "(273.3334, 284.0)",
+			"catwalk": true,
+			"frame": 24,
+			"player": "(207.4167, 218.7917)",
+			"shield": true,
+			"station": 1,
+			"target": 2
+		},
+		{
+			"can": "(216.0, 290.0)",
+			"can_state": "recover",
+			"cart": "(293.3334, 284.0)",
+			"catwalk": true,
+			"frame": 30,
+			"player": "(222.9166, 207.25)",
+			"shield": true,
+			"station": 1,
+			"target": 2
+		},
+		{
+			"can": "(219.6, 290.0)",
+			"can_state": "idle",
+			"cart": "(313.3335, 284.0)",
+			"catwalk": true,
+			"frame": 36,
+			"player": "(238.4166, 202.2083)",
+			"shield": false,
+			"station": 1,
+			"target": 2
+		},
+		{
+			"can": "(226.8, 290.0)",
+			"can_state": "idle",
+			"cart": "(333.3336, 284.0)",
+			"catwalk": true,
+			"frame": 42,
+			"player": "(241.9253, 203.6667)",
+			"shield": false,
+			"station": 1,
+			"target": 2
+		},
+		{
+			"can": "(234.0, 290.0)",
+			"can_state": "idle",
+			"cart": "(353.3336, 284.0)",
+			"catwalk": true,
+			"frame": 48,
+			"player": "(243.1614, 208.9253)",
+			"shield": false,
+			"station": 1,
+			"target": 2
+		},
+		{
+			"can": "(239.9999, 290.0)",
+			"can_state": "idle",
+			"cart": "(360.0, 284.0)",
+			"catwalk": true,
+			"frame": 54,
+			"player": "(244.0363, 208.2554)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(247.1999, 290.0)",
+			"can_state": "idle",
+			"cart": "(360.0, 284.0)",
+			"catwalk": true,
+			"frame": 60,
+			"player": "(234.5363, 208.9253)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(254.3999, 290.0)",
+			"can_state": "idle",
+			"cart": "(360.0, 284.0)",
+			"catwalk": true,
+			"frame": 66,
+			"player": "(229.4114, 208.9253)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(246.8666, 290.0)",
+			"can_state": "idle",
+			"cart": "(360.0, 284.0)",
+			"catwalk": true,
+			"frame": 72,
+			"player": "(234.7864, 208.9253)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(239.6666, 290.0)",
+			"can_state": "idle",
+			"cart": "(360.0, 284.0)",
+			"catwalk": true,
+			"frame": 78,
+			"player": "(249.1614, 208.9253)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(237.9333, 290.0)",
+			"can_state": "idle",
+			"cart": "(360.0, 284.0)",
+			"catwalk": true,
+			"frame": 84,
+			"player": "(264.6613, 208.9253)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(247.1333, 290.0)",
+			"can_state": "idle",
+			"cart": "(360.0, 284.0)",
+			"catwalk": false,
+			"frame": 90,
+			"player": "(283.2413, 234.922)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(253.2667, 290.0)",
+			"can_state": "windup",
+			"cart": "(360.0, 284.0)",
+			"catwalk": false,
+			"frame": 96,
+			"player": "(298.7414, 273.922)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		},
+		{
+			"can": "(253.2667, 290.0)",
+			"can_state": "stunned",
+			"cart": "(360.0, 284.0)",
+			"catwalk": true,
+			"frame": 102,
+			"player": "(309.0747, 299.922)",
+			"shield": false,
+			"station": 2,
+			"target": 2
+		}
+	]
+}

@@ -1,0 +1,201 @@
+[
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "smoke",
+      "args": [],
+      "chunk_id": "f9c9f7",
+      "wall_time_seconds": 3.82007625,
+      "exit_code": 0,
+      "original_token_count": 34,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSMOKE PASS: level select, unlock save, both stages, and replay\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "route",
+      "args": [],
+      "chunk_id": "b9cd3e",
+      "wall_time_seconds": 0.874319834,
+      "exit_code": 0,
+      "original_token_count": 36,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nROUTE PASS: all three rebound climbs work with the starting abilities\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "interactions",
+      "args": [],
+      "chunk_id": "0f72d9",
+      "wall_time_seconds": 0.746239792,
+      "exit_code": 0,
+      "original_token_count": 43,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nINTERACTIONS PASS: enemy damage, defeat, spikes, respawn, moving platform, crusher top and spikes\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "rebound",
+      "args": [],
+      "chunk_id": "b02857",
+      "wall_time_seconds": 0.403510417,
+      "exit_code": 0,
+      "original_token_count": 41,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nREBOUND PASS: immediate hit keeps its launch speed; ordinary jumps retain variable height\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "dash",
+      "args": [],
+      "chunk_id": "0957df",
+      "wall_time_seconds": 1.005652625,
+      "exit_code": 0,
+      "original_token_count": 36,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nDASH PASS: nearest target, momentum, recharge, and three enemy chains\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "kinetic",
+      "args": [],
+      "chunk_id": "02c9d9",
+      "wall_time_seconds": 2.311915833,
+      "exit_code": 0,
+      "original_token_count": 41,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSYSTEMIC PASS: committed ram, deterministic cart, safety gates, switches, NPC, and rewind\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "kinetic_route",
+      "args": [],
+      "chunk_id": "ccd822",
+      "wall_time_seconds": 2.527471125,
+      "exit_code": 0,
+      "original_token_count": 42,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSYSTEMIC ROUTE PASS: bounce, cart circuit, heuristic break, cut-off, ram lock, NPC delivery\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "foundry_depth",
+      "args": [],
+      "chunk_id": "75bfa7",
+      "wall_time_seconds": 1.148671667,
+      "exit_code": 0,
+      "original_token_count": 48,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nFOUNDRY DEPTH PASS: intent, force, roof cost, weight loss, two solutions, reversal, shared crusher, snapshot, pause\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "foundry_rules",
+      "args": [],
+      "chunk_id": "277694",
+      "wall_time_seconds": 2.0978695,
+      "exit_code": 0,
+      "original_token_count": 56,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nFOUNDRY RULES PASS: general force, persistent fracture, dexterity limits, roof prerequisite, early knowledge shortcut, safe gate, R and death recovery\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "foundry_route",
+      "args": [],
+      "chunk_id": "d422d3",
+      "wall_time_seconds": 1.2607770839999999,
+      "original_token_count": 49,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nROUTE BEAT react P (387.8941, 197.2993) / Can (354.7335, 290.0) stunned / Cart (720.0, 284.0) 0->0 / mode play / frame 203\n\nROUTE BEAT knowledge transfer P (1118.924, 252.0314) / Can (1115.0, 290.0) recover / Cart (968.0, 284.0) 1->2 / mode play / frame 1641\nROUTE PROGRESS P (1464.304, 290.9253) / Can (1239.569, 290.0) charging / Cart (968.0, 284.0) 1->2 / mode play / frame 1800\nROUTE BEAT world affects Can P (1587.1, 200.2993) / Can (1480.207, 290.0) stunned / Cart (970.0, 284.0) 1->2 / mode play / frame 2133\nROUTE BEAT preserve roof before transport P (1775.084, 186.2992) / Can (1645.912, 290.0) stunned / Cart (1780.0, 284.0) 2->2 / mode play / frame 3121\nROUTE PROGRESS P (1951.925, 271.2161) / Can (1775.118, 290.0) charging / Cart (1990.0, 284.0) 3->3 / mode play / frame 3600\nROUTE BEAT preserve weight then latch route P (2214.068, 290.9973) / Can (2001.853, 290.0) charging / Cart (2300.0, 284.0) 4->4 / mode play / frame 3817\nROUTE PROGRESS P (124.6423, 290.9253) / Can (1489.203, 290.0) stunned / Cart (2638.0, 284.0) 4->5 / mode play / frame 5400\nROUTE PROGRESS P (124.6423, 290.9253) / Can (348.3183, 290.0) charging / Cart (2638.0, 284.0) 4->5 / mode play / frame 7200\nROUTE BEAT return with knowledge P (57.93066, 270.0077) / Can (123.0667, 290.0) recover / Cart (2640.0, 284.0) 4->5 / mode play / frame 7317\nROUTE PROGRESS P (2932.774, 290.9253) / Can (1399.546, 290.0) idle / Cart (2810.0, 284.0) 5->5 / mode play / frame 9000\nROUTE PROGRESS P (2916.343, 253.841) / Can (2782.451, 290.0) windup / Cart (2950.0, 284.0) 6->6 / mode play / frame 10800\nROUTE BEAT mastery: durable route P (3170.586, 290.9973) / Can (2940.852, 290.0) windup / Cart (3230.0, 284.0) 7->7 / mode play / frame 11006\nROUTE STATES: react | knowledge transfer | world affects Can | preserve roof before transport | preserve weight then latch route | return with knowledge | mastery: durable route\nROUTE TIME: 190.0 simulated seconds; 7 impacts; 3 stomps\nFOUNDRY FRESH ROUTE PASS: real player inputs, every beat, one persistent Can/Cart, full completion\n",
+      "exit_code": 0
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "foundry_route",
+      "args": [
+        "--",
+        "--weight"
+      ],
+      "exit_code": 0,
+      "output": "FOUNDRY FRESH ROUTE PASS: actual alternate temporary-weight plan; 198.8 simulated seconds; 7 impacts; 4 stomps. The earlier --can argument was ignored; rerun with --weight validated the distinct plan."
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "second_core",
+      "args": [],
+      "chunk_id": "6f5c01",
+      "wall_time_seconds": 1.851602417,
+      "exit_code": 0,
+      "original_token_count": 77,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nCORE TUNING: anticipation=0.55s speed=230 bounce=-305 stagger=0.38s impact recovery=0.20s Cart step=80px/0.40s\nSECOND CORE PASS: objective-free bait / commitment / continued rebound / impact / fast reuse / actual hard-wall grounding\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "second_systems",
+      "args": [],
+      "chunk_id": "b95af5",
+      "wall_time_seconds": 2.623938583,
+      "exit_code": 0,
+      "original_token_count": 59,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSECOND SYSTEM CHECKS: 23\nSECOND SYSTEM PASS: E–J, actual bidirectional impacts, visible multi-role positions, shared hazard, weight, force, complete recovery\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "second_route",
+      "args": [],
+      "chunk_id": "ec83a2",
+      "wall_time_seconds": 2.724906584,
+      "exit_code": 0,
+      "original_token_count": 441,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nBEAT Sparks: bait, evade, fracture / room1 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(105.0, 284.0)/0>0 modeplay frame168\nBEAT Crossroads: forward C roof after bridge change / room2 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(105.0, 284.0)/0>0 modeplay frame492\nTRACE room2 P(251.5918, 290.9253) Can(105.6, 290.0)/recover Cart(148.3333, 284.0)/0>1 modeplay frame600\nBEAT Press: Cart moves through shield/weight to forward roof / room3 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(265.0, 284.0)/2>2 modeplay frame729\nBEAT Freeform: reverse C to B for lasting support / room3 P(176.981, 248.0954) Can(231.7334, 290.0)/idle Cart(185.0, 284.0)/1>1 modeplay frame972\nSECOND ROUTE cart METRICS: {\"cart_impacts\":5,\"charges\":8,\"completion_seconds\":18.08,\"deaths\":0,\"environmental_stuns\":0,\"idle_seconds\":2.1,\"rebounds\":4,\"resets\":0,\"reversals\":1,\"rooms\":[{\"bridge\":false,\"broken\":true,\"cart\":0,\"room\":\"SPARKS\",\"stats\":{\"cart_impacts\":0,\"charges\":1,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":0,\"resets\":0,\"reversals\":0},\"time\":2.51666666666666},{\"bridge\":false,\"broken\":false,\"cart\":2,\"room\":\"CROSSROADS\",\"stats\":{\"cart_impacts\":2,\"charges\":4,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":2,\"resets\":0,\"reversals\":0},\"time\":7.93333333333331},{\"bridge\":false,\"broken\":false,\"cart\":2,\"room\":\"THE PRESS\",\"stats\":{\"cart_impacts\":4,\"charges\":6,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":3,\"resets\":0,\"reversals\":0},\"time\":11.9000000000002},{\"bridge\":true,\"broken\":false,\"cart\":1,\"room\":\"FREEFORM\",\"stats\":{\"cart_impacts\":5,\"charges\":8,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":4,\"resets\":0,\"reversals\":1},\"time\":18.0833333333336}]}\nSECOND FRESH ROUTE PASS: cart — input-only, all four encounters\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "second_route",
+      "args": [
+        "--",
+        "--can"
+      ],
+      "chunk_id": "2d0f26",
+      "wall_time_seconds": 2.902193167,
+      "exit_code": 0,
+      "original_token_count": 441,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nBEAT Sparks: bait, evade, fracture / room1 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(105.0, 284.0)/0>0 modeplay frame168\nBEAT Crossroads: forward C roof after bridge change / room2 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(105.0, 284.0)/0>0 modeplay frame492\nTRACE room2 P(251.5918, 290.9253) Can(105.6, 290.0)/recover Cart(148.3333, 284.0)/0>1 modeplay frame600\nBEAT Press: Cart moves through shield/weight to forward roof / room3 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(265.0, 284.0)/2>2 modeplay frame729\nBEAT Freeform: environment grounds Can as weight / room3 P(140.8338, 213.9054) Can(202.5999, 290.0)/stunned Cart(265.0, 284.0)/2>2 modeplay frame995\nSECOND ROUTE can METRICS: {\"cart_impacts\":4,\"charges\":7,\"completion_seconds\":18.33,\"deaths\":0,\"environmental_stuns\":1,\"idle_seconds\":2.45,\"rebounds\":5,\"resets\":0,\"reversals\":0,\"rooms\":[{\"bridge\":false,\"broken\":true,\"cart\":0,\"room\":\"SPARKS\",\"stats\":{\"cart_impacts\":0,\"charges\":1,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":0,\"resets\":0,\"reversals\":0},\"time\":2.51666666666666},{\"bridge\":false,\"broken\":false,\"cart\":2,\"room\":\"CROSSROADS\",\"stats\":{\"cart_impacts\":2,\"charges\":4,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":2,\"resets\":0,\"reversals\":0},\"time\":7.93333333333331},{\"bridge\":false,\"broken\":false,\"cart\":2,\"room\":\"THE PRESS\",\"stats\":{\"cart_impacts\":4,\"charges\":6,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":3,\"resets\":0,\"reversals\":0},\"time\":11.9000000000002},{\"bridge\":true,\"broken\":false,\"cart\":2,\"room\":\"FREEFORM\",\"stats\":{\"cart_impacts\":4,\"charges\":7,\"deaths\":0,\"environmental_stuns\":1,\"rebounds\":5,\"resets\":0,\"reversals\":0},\"time\":18.3333333333336}]}\nSECOND FRESH ROUTE PASS: can — input-only, all four encounters\n"
+    }
+  },
+  {
+    "status": "fulfilled",
+    "value": {
+      "script": "second_route",
+      "args": [
+        "--",
+        "--high",
+        "--can"
+      ],
+      "chunk_id": "df7a32",
+      "wall_time_seconds": 3.220881708,
+      "exit_code": 0,
+      "original_token_count": 437,
+      "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nBEAT Sparks: bait, evade, fracture / room1 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(105.0, 284.0)/0>0 modeplay frame168\nBEAT Crossroads: preserve A roof / room2 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(105.0, 284.0)/0>0 modeplay frame350\nBEAT Press: Cart moves through shield/weight to forward roof / room3 P(45.0, 291.0) Can(55.0, 290.0)/idle Cart(265.0, 284.0)/2>2 modeplay frame587\nTRACE room3 P(65.83334, 290.9253) Can(55.0, 290.0)/idle Cart(265.0, 284.0)/2>2 modeplay frame600\nBEAT Freeform: environment grounds Can as weight / room3 P(140.8338, 213.9054) Can(202.5999, 290.0)/stunned Cart(265.0, 284.0)/2>2 modeplay frame853\nSECOND ROUTE high_can METRICS: {\"cart_impacts\":2,\"charges\":4,\"completion_seconds\":15.97,\"deaths\":0,\"environmental_stuns\":1,\"idle_seconds\":2.08,\"rebounds\":4,\"resets\":0,\"reversals\":0,\"rooms\":[{\"bridge\":false,\"broken\":true,\"cart\":0,\"room\":\"SPARKS\",\"stats\":{\"cart_impacts\":0,\"charges\":1,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":0,\"resets\":0,\"reversals\":0},\"time\":2.51666666666666},{\"bridge\":false,\"broken\":false,\"cart\":0,\"room\":\"CROSSROADS\",\"stats\":{\"cart_impacts\":0,\"charges\":1,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":1,\"resets\":0,\"reversals\":0},\"time\":5.56666666666665},{\"bridge\":false,\"broken\":false,\"cart\":2,\"room\":\"THE PRESS\",\"stats\":{\"cart_impacts\":2,\"charges\":3,\"deaths\":0,\"environmental_stuns\":0,\"rebounds\":2,\"resets\":0,\"reversals\":0},\"time\":9.53333333333339},{\"bridge\":true,\"broken\":false,\"cart\":2,\"room\":\"FREEFORM\",\"stats\":{\"cart_impacts\":2,\"charges\":4,\"deaths\":0,\"environmental_stuns\":1,\"rebounds\":4,\"resets\":0,\"reversals\":0},\"time\":15.966666666667}]}\nSECOND FRESH ROUTE PASS: high_can — input-only, all four encounters\n"
+    }
+  }
+]

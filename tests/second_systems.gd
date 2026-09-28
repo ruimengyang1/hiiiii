@@ -8,7 +8,7 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func run() -> void:
-	level = load("res://scenes/foundry.tscn").instantiate()
+	level = load("res://scenes/foundry_second.tscn").instantiate()
 	root.add_child(level)
 	await frames(3)
 	level.room_index = 3
