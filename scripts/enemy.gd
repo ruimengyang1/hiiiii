@@ -5,6 +5,8 @@ signal defeated(at: Vector2)
 signal kinetic_struck(player_speed: float, ram_speed: float)
 signal carriage_hit(ram_speed: float, carriage_speed: float)
 signal wall_rebounded(side: int, incoming_speed: float, outgoing_speed: float)
+signal charge_locked(direction: int)
+signal stunned(duration: float)
 
 const KINETIC_STRIKE_RAM_RETENTION := 0.40
 const KINETIC_PLAYER_TRANSFER := 1.10
@@ -33,6 +35,10 @@ var kinetic_mode := false
 var velocity_x := 0.0
 var spawn_position := Vector2.ZERO
 var contact_cooldown := 0.0
+var systemic_mode := false
+var charge_enabled := true
+var trigger_range := KINETIC_TRIGGER_RANGE
+var charge_impulse := KINETIC_CHARGE_IMPULSE
 
 func configure(enemy_kind: String, at: Vector2, patrol_left: float, patrol_right: float) -> void:
 	kind = enemy_kind
@@ -57,6 +63,12 @@ func configure_kinetic_ram(at: Vector2, movement_left: float, movement_right: fl
 	cooldown = 0.3
 	velocity_x = 0.0
 	health = 1
+
+func configure_systemic_ram(at: Vector2, movement_left: float, movement_right: float) -> void:
+	configure_kinetic_ram(at, movement_left, movement_right)
+	systemic_mode = true
+	trigger_range = 175.0
+	charge_impulse = 138.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -108,16 +120,16 @@ func _update_kinetic_ram(delta: float) -> void:
 		"idle":
 			velocity_x = move_toward(velocity_x, 0.0, KINETIC_IDLE_FRICTION * delta)
 			cooldown = maxf(0.0, cooldown - delta)
-			if player != null and cooldown <= 0.0 and absf(player.global_position.x - global_position.x) <= KINETIC_TRIGGER_RANGE:
+			if charge_enabled and player != null and cooldown <= 0.0 and absf(player.global_position.x - global_position.x) <= trigger_range:
+				facing = 1 if player.global_position.x > global_position.x else -1
 				state = "windup"
 				state_time = KINETIC_WINDUP
+				charge_locked.emit(facing)
 		"windup":
 			velocity_x = move_toward(velocity_x, 0.0, KINETIC_IDLE_FRICTION * delta)
 			state_time = maxf(0.0, state_time - delta)
-			if player != null and not is_zero_approx(player.global_position.x - global_position.x):
-				facing = 1 if player.global_position.x > global_position.x else -1
 			if state_time <= 0.0:
-				velocity_x = clampf(velocity_x + facing * KINETIC_CHARGE_IMPULSE, -KINETIC_MAX_SPEED, KINETIC_MAX_SPEED)
+				velocity_x = clampf(velocity_x + facing * charge_impulse, -KINETIC_MAX_SPEED, KINETIC_MAX_SPEED)
 				state = "coast"
 		"coast":
 			velocity_x = move_toward(velocity_x, 0.0, KINETIC_COAST_FRICTION * delta)
@@ -130,6 +142,12 @@ func _update_kinetic_ram(delta: float) -> void:
 			if state_time <= 0.0:
 				state = "idle"
 				cooldown = 0.2
+		"stunned":
+			velocity_x = 0.0
+			state_time = maxf(0.0, state_time - delta)
+			if state_time <= 0.0:
+				state = "recover"
+				state_time = 0.28
 	position.x += velocity_x * delta
 	if position.x < left_bound:
 		var incoming_left := velocity_x
@@ -146,6 +164,26 @@ func _update_kinetic_ram(delta: float) -> void:
 		state_time = 0.3
 		wall_rebounded.emit(1, incoming_right, velocity_x)
 	_check_kinetic_carriage_contact()
+	_check_ram_receivers()
+
+func _check_ram_receivers() -> void:
+	if not systemic_mode or contact_cooldown > 0.0 or absf(velocity_x) < 25.0:
+		return
+	for node in get_tree().get_nodes_in_group("ram_receivers"):
+		var receiver := node as Node2D
+		if receiver == null or not receiver.has_method("receive_ram_impact"):
+			continue
+		if receiver.has_method("is_ram_passthrough") and bool(receiver.call("is_ram_passthrough")):
+			continue
+		if global_position.distance_to(receiver.global_position) > 27.0:
+			continue
+		var incoming := velocity_x
+		var result = receiver.call("receive_ram_impact", incoming)
+		velocity_x = float(result) if result != null else -incoming * 0.35
+		state = "recover"
+		state_time = 0.42
+		contact_cooldown = 0.16
+		return
 
 func _check_kinetic_carriage_contact() -> void:
 	if contact_cooldown > 0.0:
@@ -234,6 +272,20 @@ func receive_kinetic_strike(player_velocity_x: float) -> bool:
 	kinetic_struck.emit(player_velocity_x, velocity_x)
 	return true
 
+func receive_stun(duration: float = 0.9) -> void:
+	velocity_x = 0.0
+	state = "stunned"
+	state_time = duration
+	cooldown = duration
+	flash = duration
+	stunned.emit(duration)
+
+func set_charge_enabled(enabled: bool) -> void:
+	charge_enabled = enabled
+	if not enabled and state == "windup":
+		state = "recover"
+		state_time = 0.25
+
 func reset_kinetic() -> void:
 	position = spawn_position
 	home = spawn_position
@@ -245,6 +297,7 @@ func reset_kinetic() -> void:
 	contact_cooldown = 0.0
 	alive = true
 	monitoring = true
+	charge_enabled = true
 	queue_redraw()
 
 func _on_body_entered(body: Node2D) -> void:
@@ -284,8 +337,19 @@ func _draw() -> void:
 			draw_rect(Rect2(-12, -8 + int(sin(clock * 18.0)), 7, 1), Color("9ac6c7"))
 			draw_rect(Rect2(5, -8 - int(sin(clock * 18.0)), 7, 1), Color("9ac6c7"))
 		"sentry", "kinetic_ram":
+			if kinetic_mode and state == "windup":
+				var arrow_color := Color("ff5f57") if int(state_time * 10.0) % 2 == 0 else Color("ffad66")
+				var arrow_end := Vector2(facing * 54.0, 0)
+				draw_line(Vector2(facing * 13.0, 0), arrow_end, arrow_color, 3.0)
+				draw_colored_polygon(PackedVector2Array([
+					arrow_end,
+					arrow_end + Vector2(-facing * 10.0, -7.0),
+					arrow_end + Vector2(-facing * 10.0, 7.0),
+				]), arrow_color)
+			if kinetic_mode and state == "stunned":
+				draw_arc(Vector2.ZERO, 15.0, 0.0, TAU, 16, Color("a9f4dd"), 2.0)
 			draw_rect(Rect2(-10, -10, 20, 20), ink)
-			draw_rect(Rect2(-8, -9, 16, 16), steel)
+			draw_rect(Rect2(-8, -9, 16, 16), Color("a9f4dd") if state == "stunned" else steel)
 			draw_rect(Rect2(-7, 5, 14, 3), brass)
 			draw_rect(Rect2(-2 + facing * 3, -5, 3, 3), Color("f46e5a") if state == "windup" else eye)
 			draw_rect(Rect2(-7, -12, 14, 3), brass)

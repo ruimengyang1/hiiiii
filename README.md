@@ -1,55 +1,69 @@
-# Clockwork Ascent: Kinetic Prototype
+# Foundry / Future States
 
-The project currently launches a continuous Godot 4.7 gray-box level for
-*Kinetic Clockwork*. Run, jump, and downward-strike a charging ram to transfer
-your horizontal momentum into it. The same heavy rail carriage carries that
-changing momentum through three connected situations: catch it after launch,
-deal with a second ram approaching from the opposite direction, and turn its
-leftward return into the jump to the exit gantry.
+A continuous systemic platformer built from Clockwork Ascent. One malfunctioning
+maintenance Can, one engineer's transport, and a small set of industrial rules
+turn intent into force, lasting state, and future options.
 
-The original two-level *Clockwork Ascent* build remains intact in
-`scenes/game.tscn`; this prototype is isolated in
-`scenes/kinetic_prototype.tscn` so the mechanic can be evaluated before either
-full level is redesigned.
-
-The original design brief and implementation plan are in [GAME_PLAN.md](GAME_PLAN.md).
-Past and upcoming game changes are recorded in [CHANGELOG.md](CHANGELOG.md).
-
-## Play
-
-Open the project in Godot 4.7 and run it, or run `godot --path .` from this directory.
+Run the project in **Godot 4.7**. The launch scene is `scenes/foundry.tscn`.
+Deliver the engineer and restore evacuation power. The first-run design target
+is 10–15 minutes; independent human timing is still needed. Two input-only
+expert routes complete in approximately 3:12 and 3:18.
 
 | Action | Keyboard | Gamepad |
-| --- | --- | --- |
-| Move | A/D or arrow keys | Left stick or D-pad |
+|---|---|---|
+| Move | A/D or arrows | Left stick / D-pad |
 | Jump | Space | A / Cross |
-| Downward strike | J or X, in midair | X / Square |
-| Reset experiment | R | Y / Triangle |
+| Airborne stomp | J / X | X / Square |
+| Rewind current encounter | R | Y / Triangle |
+| Fresh run | Shift + R; R after completion | Y after completion |
+| Pause / resume | Escape | Start |
+| Recall property hint | H | — |
 
-The strike uses the player's current horizontal speed. A near-vertical strike
-damps a ram, a fast strike in its direction accelerates it, and an
-opposite-direction strike can slow or reverse it. The carriage coasts with
-deterministic friction, rebounds from its rail stops, carries the player, and
-accepts weaker direct strike corrections. Safe work islands make imperfect
-momentum recoverable; spikes and ram contact reset the relay quickly.
+A red arrow announces a locked charge. The Can searches with lowered forks and
+magnetic suspension; a stomp or press impact grounds it for six seconds. Its
+stunned shell is safe, rebounds the player, and loads heavy plates. Cart wheels
+load the same plates. The roof also rebounds the player, so moving transport
+can remove useful access. Levers latch circuits without returning a bounce.
 
-The on-screen velocity readout and arrows are temporary playtest diagnostics.
-The candidate comparison, section audit, and system-led discovery are recorded
-in [KINETIC_LEVEL_DESIGN.md](KINETIC_LEVEL_DESIGN.md).
+Broken bulkheads, transport position, actor state, and circuit changes persist.
+R restores the complete local encounter snapshot. Death does the same after
+0.4 seconds. Safe upper perches give thinking space while the Can searches.
 
-## Checks
+[DESIGN_SPEC.md](DESIGN_SPEC.md) contains the pre-implementation audit, five
+rules, encounter consequences, interaction matrix, and implementation
+refinements. [REDESIGN_REPORT.md](REDESIGN_REPORT.md) contains the final audit,
+learning curve, inspirations, novice/expert walkthroughs, test evidence,
+alternative strategies, changed files, and remaining problems.
 
-Run the integration checks from this directory:
+The earlier experiences remain runnable:
+
+- `scenes/kinetic_prototype.tscn`: prior System Link passenger-cart prototype.
+- `scenes/game.tscn`: original Foundry and Relay Shaft levels, including dash.
+
+`GAME_PLAN.md`, `KINETIC_LEVEL_DESIGN.md`, `SYSTEMIC_LEVEL_DESIGN.md`, and
+`CHARACTERISTICS_ALIGNMENT.md` describe those historical iterations.
+
+## Verification
+
+Run from this directory, using your Godot executable:
 
 ```sh
-godot --headless --path . --script res://tests/smoke.gd
-godot --headless --path . --script res://tests/route.gd
-godot --headless --path . --script res://tests/interactions.gd
-godot --headless --path . --script res://tests/rebound.gd
-godot --headless --path . --script res://tests/dash.gd
-godot --headless --path . --script res://tests/kinetic.gd
-godot --headless --path . --script res://tests/kinetic_route.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_depth.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_rules.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_route.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_route.gd -- --weight
 ```
 
-The optional capture scripts save screenshots to `/tmp` when run with a
-graphics display.
+The route checks start fresh and use only player inputs: no teleports, cart
+station setters, scripted impacts, switch activation calls, or progression
+flag writes. Depth/rule checks use deliberate fixtures to probe failures and
+recovery. Headless checks suppress audio playback because accelerated physics
+does not advance the real-time audio mixer; normal graphical play retains all
+existing generated sounds.
+
+The preserved regression checks are `smoke.gd`, `route.gd`, `interactions.gd`,
+`rebound.gd`, `dash.gd`, `kinetic.gd`, and `kinetic_route.gd` in `tests/`.
+
+With a graphics display, run `tests/capture_foundry.gd` to refresh the seven
+fixture screenshots in `artifacts/screenshots/`. Those are visual inspections,
+not substitutes for the fresh input-only routes.

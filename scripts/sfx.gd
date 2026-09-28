@@ -10,8 +10,15 @@ func _ready() -> void:
 	samples["death"] = _make_sound(115.0, 0.26, 0.17, true)
 	samples["checkpoint"] = _make_sound(520.0, 0.24, 0.14, false)
 	samples["win"] = _make_sound(760.0, 0.38, 0.15, false)
+	samples["telegraph"] = _make_sound(285.0, 0.28, 0.13, false)
+	samples["switch"] = _make_sound(590.0, 0.22, 0.16, false)
+	samples["alarm"] = _make_sound(185.0, 0.32, 0.15, true)
 
 func play(kind: String) -> void:
+	# Accelerated headless physics does not advance the real-time audio mixer.
+	# Avoid accumulating unfinished playback voices in non-visual checks.
+	if DisplayServer.get_name() == "headless":
+		return
 	if not samples.has(kind):
 		return
 	var player := AudioStreamPlayer.new()

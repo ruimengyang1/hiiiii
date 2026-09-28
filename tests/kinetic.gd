@@ -1,7 +1,8 @@
 extends SceneTree
 
 const RamScript = preload("res://scripts/enemy.gd")
-const CarriageScript = preload("res://scripts/moving_platform.gd")
+const CartScript = preload("res://scripts/moving_platform.gd")
+const SwitchScript = preload("res://scripts/systemic_switch.gd")
 
 var failures: Array[String] = []
 
@@ -9,218 +10,136 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	_test_strike_transfer()
-	_test_playthrough_states()
-	_test_counter_outcomes()
-	_test_deterministic_damping()
-	await _test_room_strikes_collision_and_reset()
+	_test_direction_lock_and_strike()
+	_test_cart_rules()
+	await _test_switches_and_scene_state()
 	if failures.is_empty():
-		print("KINETIC PASS: transfer bands, stop rebound, direct correction, collision, relaunch recovery, reset, and exit")
+		print("SYSTEMIC PASS: committed ram, deterministic cart, safety gates, switches, NPC, and rewind")
 		quit(0)
 	else:
 		for failure in failures:
-			printerr("KINETIC FAIL: ", failure)
+			printerr("SYSTEMIC FAIL: ", failure)
 		quit(1)
 
-func _test_strike_transfer() -> void:
-	var weak := _ram_speed_after_strike(0.0)
-	var medium := _ram_speed_after_strike(60.0)
-	var strong := _ram_speed_after_strike(150.0)
-	var opposite := _ram_speed_after_strike(-150.0)
-	_check(is_equal_approx(weak, 60.0), "near-vertical strike damps a 150 ram charge to 60 (found %.2f)" % weak)
-	_check(is_equal_approx(medium, 126.0), "medium strike produces a distinct 126 ram speed (found %.2f)" % medium)
-	_check(is_equal_approx(strong, 225.0), "strong strike produces a distinct 225 ram speed (found %.2f)" % strong)
-	_check(opposite < 0.0 and is_equal_approx(opposite, -105.0), "opposite strike reverses the ram (found %.2f)" % opposite)
-	_check(strong - medium > 70.0 and medium - weak > 60.0, "weak, medium, and strong bands remain clearly separated")
-
-func _test_playthrough_states() -> void:
-	var weak_carriage = _new_carriage()
-	weak_carriage.receive_ram_impact(_ram_speed_after_strike(0.0))
-	_settle(weak_carriage)
-	_check(weak_carriage.position.x > 190.0 and weak_carriage.position.x < 200.0, "B undershoot stops near the left side (x %.2f)" % weak_carriage.position.x)
-
-	var medium_carriage = _new_carriage()
-	medium_carriage.receive_ram_impact(_ram_speed_after_strike(60.0))
-	_settle(medium_carriage)
-	_check(medium_carriage.position.x > 248.0 and medium_carriage.position.x < 264.0, "C controlled push settles in the useful jump window (x %.2f)" % medium_carriage.position.x)
-
-	var strong_carriage = _new_carriage()
-	var stop_trace := {"hits": 0, "speed": 0.0}
-	strong_carriage.stop_rebounded.connect(func(side: int, _incoming: float, outgoing: float) -> void:
-		if side > 0:
-			stop_trace["hits"] = int(stop_trace["hits"]) + 1
-			stop_trace["speed"] = outgoing
-	)
-	strong_carriage.receive_ram_impact(_ram_speed_after_strike(150.0))
-	for _step in 600:
-		strong_carriage.advance_kinetic(1.0 / 120.0)
-		if int(stop_trace["hits"]) > 0:
-			break
-	_check(int(stop_trace["hits"]) == 1, "A strong push reaches the far stop")
-	_check(float(stop_trace["speed"]) < -50.0, "A far stop returns substantial leftward speed (%.2f)" % float(stop_trace["speed"]))
-
-	var speed_before_recovery: float = strong_carriage.velocity_x
-	strong_carriage.receive_kinetic_strike(155.0)
-	_check(absf(strong_carriage.velocity_x) < absf(speed_before_recovery), "D opposite carriage strike brakes the rebound (%.2f -> %.2f)" % [speed_before_recovery, strong_carriage.velocity_x])
-	_settle(strong_carriage)
-	_check(strong_carriage.position.x > 265.0, "D corrected carriage remains in a recoverable exit position (x %.2f)" % strong_carriage.position.x)
-	weak_carriage.free()
-	medium_carriage.free()
-	strong_carriage.free()
-
-func _test_deterministic_damping() -> void:
-	var first = _new_carriage()
-	var second = _new_carriage()
-	first.velocity_x = 73.0
-	second.velocity_x = 73.0
-	for _step in 240:
-		first.advance_kinetic(1.0 / 120.0)
-		second.advance_kinetic(1.0 / 120.0)
-	_check(is_equal_approx(first.position.x, second.position.x) and is_equal_approx(first.velocity_x, second.velocity_x), "carriage damping is deterministic")
-	first.free()
-	second.free()
-
-func _test_counter_outcomes() -> void:
-	var head_on = _new_carriage()
-	head_on.velocity_x = 100.0
-	head_on.receive_ram_impact(-150.0)
-	_check(head_on.velocity_x < 0.0, "an untouched opposing ram reverses a rightward carriage (found %.2f)" % head_on.velocity_x)
-
-	var redirected_ram = RamScript.new()
-	redirected_ram.configure_kinetic_ram(Vector2.ZERO, -100.0, 100.0)
-	redirected_ram.velocity_x = -150.0
-	redirected_ram.receive_kinetic_strike(155.0)
-	_check(redirected_ram.velocity_x > 100.0, "a fast rightward strike turns the opposing ram into a rightward pacer (found %.2f)" % redirected_ram.velocity_x)
-
-	var recovered = _new_carriage()
-	recovered.velocity_x = -80.0
-	recovered.receive_ram_impact(150.0)
-	_check(recovered.velocity_x > 20.0, "a later launch-ram impact turns a failed leftward state back into progress (found %.2f)" % recovered.velocity_x)
-	head_on.free()
-	redirected_ram.free()
-	recovered.free()
-
-func _test_room_strikes_collision_and_reset() -> void:
-	var scene := load("res://scenes/kinetic_prototype.tscn") as PackedScene
-	var prototype = scene.instantiate()
-	root.add_child(prototype)
-	await physics_frame
-	await physics_frame
-	Input.action_press("move_right")
-	for _frame in 4:
-		await physics_frame
-	Input.action_release("move_right")
-	var medium_input_speed: float = prototype.player.velocity.x
-	prototype.reset_encounter()
-	await process_frame
-	Input.action_press("move_right")
-	for _frame in 14:
-		await physics_frame
-	Input.action_release("move_right")
-	var strong_input_speed: float = prototype.player.velocity.x
-	_check(medium_input_speed > 45.0 and medium_input_speed < 90.0, "a short directional press reproducibly creates a medium-speed band (%.2f)" % medium_input_speed)
-	_check(strong_input_speed > 145.0, "a held direction reproducibly reaches the strong-speed band (%.2f)" % strong_input_speed)
-
-	prototype.reset_encounter()
-	await process_frame
-	prototype.ram.state = "coast"
-	prototype.ram.velocity_x = 150.0
-	prototype.player.global_position = prototype.ram.global_position + Vector2(0, -28)
-	prototype.player.velocity = Vector2(60, 0)
-	await physics_frame
-	Input.action_press("attack")
-	await physics_frame
-	await physics_frame
-	Input.action_release("attack")
-	_check(prototype.player.velocity.y < -180.0, "real downward strike rebounds from the kinetic ram")
-	_check(prototype.ram.velocity_x > 90.0 and prototype.ram.velocity_x < 145.0, "real medium-speed strike changes ram momentum (%.2f)" % prototype.ram.velocity_x)
-
-	prototype.reset_encounter()
-	await process_frame
-	prototype.ram.state = "recover"
-	prototype.ram.state_time = 10.0
-	prototype.player.global_position = prototype.carriage.global_position + Vector2(0, -34)
-	prototype.player.velocity = Vector2(155, 0)
-	await physics_frame
-	Input.action_press("attack")
-	await physics_frame
-	await physics_frame
-	Input.action_release("attack")
-	_check(prototype.player.velocity.y < -180.0, "real downward strike rebounds from the carriage")
-	_check(prototype.carriage.velocity_x > 25.0 and prototype.carriage.velocity_x < 40.0, "direct carriage strike makes a smaller correction (%.2f)" % prototype.carriage.velocity_x)
-
-	prototype.reset_encounter()
-	await process_frame
-	prototype.player.active = false
-	prototype.ram.position = Vector2(prototype.carriage.position.x - 43.0, prototype.ram.position.y)
-	prototype.ram.velocity_x = 120.0
-	prototype.ram.state = "coast"
-	prototype.carriage.velocity_x = 0.0
-	await physics_frame
-	await physics_frame
-	_check(prototype.carriage.velocity_x > 60.0, "physical ram/carriage contact transfers current velocity (carriage %.2f)" % prototype.carriage.velocity_x)
-	_check(prototype.ram.velocity_x < 0.0, "ram remains and rebounds after carriage contact (ram %.2f)" % prototype.ram.velocity_x)
-	prototype.carriage.position.x = 245.0
-	prototype.carriage.velocity_x = -31.0
-	prototype.ram.position.x = 250.0
-	prototype.ram.velocity_x = 90.0
-	prototype.counter_ram.position.x = 820.0
-	prototype.counter_ram.velocity_x = -70.0
-	prototype.reset_encounter()
-	_check(prototype.carriage.position.distance_to(prototype.CARRIAGE_START) < 2.0 and absf(prototype.carriage.velocity_x) < 1.0, "reset restores carriage position and velocity")
-	_check(prototype.ram.position == prototype.RAM_START and is_zero_approx(prototype.ram.velocity_x), "reset restores ram position and velocity")
-	_check(prototype.counter_ram.position == prototype.COUNTER_RAM_START and is_zero_approx(prototype.counter_ram.velocity_x), "reset restores the opposing ram")
-	_check(prototype.player.position == prototype.START_POSITION and prototype.player.active, "reset restores the player")
-	await process_frame
-
-	prototype.player.active = false
-	prototype.counter_ram.state = "recover"
-	prototype.counter_ram.state_time = 10.0
-	prototype.carriage.velocity_x = -80.0
-	prototype.carriage.receive_ram_impact(150.0)
-	_check(prototype.carriage.velocity_x > 20.0, "the original ram can relaunch a carriage sent backward by the opposing ram (carriage %.2f)" % prototype.carriage.velocity_x)
-
-	prototype.reset_encounter()
-	await process_frame
-	prototype.ram.state = "recover"
-	prototype.ram.state_time = 10.0
-	prototype.counter_ram.state = "recover"
-	prototype.counter_ram.state_time = 10.0
-	prototype.carriage.set_physics_process(false)
-	prototype.carriage.sync_to_physics = false
-	prototype.carriage.position = Vector2(1075, prototype.carriage.position.y)
-	prototype.carriage.velocity_x = -16.0
-	prototype.player.reset_at(Vector2(1075, 140))
-	await create_timer(0.1).timeout
-	Input.action_press("jump")
-	await create_timer(0.3).timeout
-	Input.action_release("jump")
-	_check(prototype.mode == "complete", "the returning carriage carries the player through the one-way exit gantry (mode %s, player %s, velocity %s)" % [prototype.mode, prototype.player.position, prototype.player.velocity])
-	prototype.mode = "complete"
-	prototype.player.active = false
-	await create_timer(0.5).timeout
-	prototype.free()
-	await process_frame
-
-func _ram_speed_after_strike(player_speed: float) -> float:
+func _test_direction_lock_and_strike() -> void:
 	var ram = RamScript.new()
-	ram.configure_kinetic_ram(Vector2.ZERO, -100.0, 100.0)
+	ram.configure_systemic_ram(Vector2.ZERO, -100.0, 100.0)
+	root.add_child(ram)
+	ram.set_physics_process(false)
 	ram.velocity_x = 150.0
-	ram.receive_kinetic_strike(player_speed)
-	var result: float = ram.velocity_x
+	ram.receive_kinetic_strike(-150.0)
+	_check(ram.velocity_x < 0.0, "opposite player momentum redirects the same persistent ram")
+	ram.velocity_x = 0.0
+	ram.facing = 1
+	ram.state = "windup"
+	ram.state_time = 0.01
+	ram._update_kinetic_ram(0.02)
+	_check(ram.state == "coast" and ram.velocity_x > 100.0, "windup commits to its previously locked direction")
+	ram.receive_stun(0.8)
+	_check(ram.state == "stunned" and is_zero_approx(ram.velocity_x), "shared hazards can stun the ram")
 	ram.free()
-	return result
 
-func _new_carriage():
-	var carriage = CarriageScript.new()
-	carriage.configure_kinetic(Vector2(176, 166), 176.0, 280.0)
-	return carriage
+func _test_cart_rules() -> void:
+	var cart = CartScript.new()
+	cart.configure_systemic(Vector2(100, 100), PackedFloat32Array([100.0, 200.0, 300.0, 400.0, 500.0]))
+	cart.unsafe_station = 3
+	_check(cart.request_station_push(1, 120.0), "ram force starts a deterministic one-stop move")
+	_advance_cart(cart)
+	_check(cart.station_index == 1 and is_equal_approx(cart.position.x, 200.0), "cart snaps to stop one")
+	_check(cart.request_station_push(1, 120.0), "second ram impact advances the same cart")
+	_advance_cart(cart)
+	_check(cart.station_index == 2, "cart reaches the circuit stop")
+	_check(not cart.request_station_push(1, 120.0), "danger bay rejects blind push-right strategy")
+	_check(cart.station_index == 2 and cart.npc_mood == "alarm", "rejection preserves recoverable state and alarms the NPC")
+	cart.set_safety_enabled(true)
+	_check(cart.request_station_push(1, 120.0), "cut-off makes danger bay a valid future state")
+	_advance_cart(cart)
+	_check(not cart.request_station_push(1, 120.0), "final stop remains locked by a separate ram interaction")
+	cart.set_final_lock_enabled(true)
+	_check(cart.request_station_push(1, 120.0), "ram lock releases the final passenger move")
+	_advance_cart(cart)
+	_check(cart.station_index == 4, "NPC cart reaches destination stop")
+	var first_x: float = cart.position.x
+	cart.force_station(2)
+	cart.request_station_push(-1, 120.0)
+	_advance_cart(cart)
+	_check(cart.station_index == 1 and cart.position.x < first_x, "the same general push rule works from either side")
+	cart.free()
 
-func _settle(carriage) -> void:
-	for _step in 2400:
-		carriage.advance_kinetic(1.0 / 120.0)
-		if is_zero_approx(carriage.velocity_x):
-			return
+func _test_switches_and_scene_state() -> void:
+	var strike_switch = SwitchScript.new()
+	strike_switch.configure("strike", Vector2.ZERO, "TEST")
+	_check(strike_switch.receive_strike() and strike_switch.active, "player strike activates a strike-property switch")
+	var ram_switch = SwitchScript.new()
+	ram_switch.configure("ram", Vector2.ZERO, "TEST")
+	ram_switch.set_armed(false)
+	ram_switch.receive_ram_impact(100.0)
+	_check(not ram_switch.active, "ram switch visibly rejects impact until environment arms it")
+	ram_switch.set_armed(true)
+	var returned := ram_switch.receive_ram_impact(100.0)
+	_check(ram_switch.active and returned < 0.0, "armed switch activates and returns ram momentum as another useful state")
+	var passed_through := ram_switch.receive_ram_impact(-100.0)
+	_check(is_equal_approx(passed_through, -100.0), "active ram lock becomes pass-through instead of a permanent bumper wall")
+	strike_switch.free()
+	ram_switch.free()
+
+	var scene := load("res://scenes/kinetic_prototype.tscn") as PackedScene
+	var level = scene.instantiate()
+	root.add_child(level)
+	await physics_frame
+	await physics_frame
+	_check(level.briefing_active and "RESCUE THE ENGINEER" in level.briefing_panel.get_child(0).text, "opening briefing states the rescue objective before play")
+	_check("MISSION: DELIVER ENGINEER" in level.objective_label.text, "persistent HUD names the objective")
+	level._begin_play()
+	_check(level.ui_font.antialiasing == TextServer.FONT_ANTIALIASING_NONE, "UI font disables smoothing at the pixel-art viewport scale")
+	_check(not level.result_label.visible, "empty completion panel never obstructs active play")
+	level.hint_time = 0.0
+	level._update_ui()
+	_check(not level.hint_label.visible and not level.hint_back.visible, "context hint dismisses instead of remaining stuck on screen")
+	level._show_context_hint()
+	_check(level.hint_label.visible and level.hint_back.visible, "current hint can be recalled on demand")
+	level.player.invulnerable_time = 0.0
+	level._on_ram_touched_player(level.ram.global_position)
+	_check(level.player.active and level.player.health == 2 and level.ram.state == "stunned", "first contact is recoverable and pauses the threat for instruction")
+	level.reset_encounter(true)
+	_check(level.rams.size() == 1 and level.counter_ram == level.ram, "one central ram replaces redundant opposing enemies")
+	level.ram.state = "windup"
+	level.ram.facing = 1
+	_check(level._ram_readout() == "LOCK>", "HUD exposes the ram's real-time locked direction")
+	level.ram.state = "idle"
+	level.carriage.force_station(2)
+	level._on_cart_station_changed(2)
+	_check(level.circuit_powered and not level.safety_enabled and level.ram.state == "stunned", "cart transition changes the circuit and grants a planning window")
+	level._on_cart_push_rejected(3)
+	_check(level.carriage.station_index == 2 and "DANGER BAY" in level.last_event, "premature push teaches the missing prerequisite")
+	level._on_switch_activated("strike", level.safety_switch.position)
+	_check(level.safety_enabled and level.carriage.safety_enabled, "upper cut-off changes future cart validity")
+	level.carriage.force_station(3)
+	level._on_cart_station_changed(3)
+	level.final_switch.receive_ram_impact(-100.0)
+	_check(level.final_lock_enabled and level.carriage.final_lock_enabled, "ram-only lock feeds the final cart rule")
+	level.ram.position = level.final_switch.position
+	level.ram.velocity_x = -100.0
+	level.ram.state = "coast"
+	level.ram.contact_cooldown = 0.0
+	level.ram._check_ram_receivers()
+	_check(is_equal_approx(level.ram.velocity_x, -100.0) and level.ram.state == "coast", "activated lock no longer intercepts or recovers a passing ram")
+	level.carriage.force_station(4)
+	level._on_cart_station_changed(4)
+	_check(level.npc_arrived, "NPC arrival is explicit progression state")
+	level.checkpoint_station = 3
+	level.reset_encounter(false)
+	_check(level.carriage.station_index == 3 and level.safety_enabled and not level.final_lock_enabled, "rewind restores a coherent nearby puzzle snapshot")
+	level.mode = "complete"
+	level.player.active = false
+	level.ram.set_physics_process(false)
+	level.carriage.set_physics_process(false)
+	level.free()
+	await process_frame
+
+func _advance_cart(cart) -> void:
+	for _step in 80:
+		cart.advance_systemic(1.0 / 120.0)
 
 func _check(condition: bool, message: String) -> void:
 	if not condition:
