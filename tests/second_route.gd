@@ -17,7 +17,7 @@ func run() -> void:
 	if "--can" in OS.get_cmdline_user_args():
 		variant = "can"
 	high_route = "--high" in OS.get_cmdline_user_args()
-	level = load("res://scenes/foundry.tscn").instantiate()
+	level = load("res://scenes/foundry_second.tscn").instantiate()
 	root.add_child(level)
 	await step()
 	await walk(361)

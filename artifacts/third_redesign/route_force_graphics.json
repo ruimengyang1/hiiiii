@@ -1,0 +1,172 @@
+{
+	"cart_final": 0,
+	"cart_impacts": 0,
+	"catwalk": false,
+	"charges": 2,
+	"charging_rebounds": 1,
+	"completion_seconds": 5.55,
+	"deaths": 0,
+	"discoveries": [
+		{
+			"can": "(236.6004, 290.0)",
+			"can_state": "windup",
+			"cart": 0,
+			"catwalk": false,
+			"event": "lock",
+			"grounded": false,
+			"player": "(292.1601, 266.2169)",
+			"seconds": 2.08,
+			"target": 0,
+			"wall_broken": false
+		},
+		{
+			"can": "(340.1006, 290.0)",
+			"can_state": "charging",
+			"cart": 0,
+			"catwalk": false,
+			"event": "charging rebound",
+			"grounded": false,
+			"player": "(319.3047, 271.0)",
+			"seconds": 3.12,
+			"target": 0,
+			"wall_broken": false
+		},
+		{
+			"can": "(432.0, 290.0)",
+			"can_state": "charging",
+			"cart": 0,
+			"catwalk": false,
+			"event": "fracture",
+			"grounded": false,
+			"player": "(321.4547, 203.9167)",
+			"seconds": 3.52,
+			"target": 0,
+			"wall_broken": true
+		},
+		{
+			"can": "(494.8669, 290.0)",
+			"can_state": "windup",
+			"cart": 0,
+			"catwalk": false,
+			"event": "lock",
+			"grounded": false,
+			"player": "(411.205, 290.9252)",
+			"seconds": 4.17,
+			"target": 0,
+			"wall_broken": true
+		},
+		{
+			"can": "(307.0331, 290.0)",
+			"can_state": "charging",
+			"cart": 0,
+			"catwalk": false,
+			"event": "escape",
+			"grounded": false,
+			"player": "(556.6246, 236.9252)",
+			"seconds": 5.55,
+			"target": 0,
+			"wall_broken": true
+		}
+	],
+	"environmental_stuns": 0,
+	"failures": [],
+	"hits": 1,
+	"idle_seconds": 0.52,
+	"input_only": true,
+	"rebounds": 2,
+	"resets": 0,
+	"reversals": 0,
+	"route": "force",
+	"trace": [
+		{
+			"bridge": false,
+			"can": "(96.80003, 290.0)",
+			"cart": 0,
+			"frame": 30,
+			"player": "(128.7641, 253.4241)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(141.2668, 290.0)",
+			"cart": 0,
+			"frame": 60,
+			"player": "(202.6532, 172.8956)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(182.9335, 290.0)",
+			"cart": 0,
+			"frame": 90,
+			"player": "(208.2741, 164.9253)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(228.9337, 290.0)",
+			"cart": 0,
+			"frame": 120,
+			"player": "(283.3102, 233.1753)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(236.6004, 290.0)",
+			"cart": 0,
+			"frame": 150,
+			"player": "(297.2379, 306.9253)",
+			"state": "windup"
+		},
+		{
+			"bridge": false,
+			"can": "(313.2672, 290.0)",
+			"cart": 0,
+			"frame": 180,
+			"player": "(309.9047, 266.9657)",
+			"state": "charging"
+		},
+		{
+			"bridge": false,
+			"can": "(428.2675, 290.0)",
+			"cart": 0,
+			"frame": 210,
+			"player": "(321.4547, 204.8472)",
+			"state": "charging"
+		},
+		{
+			"bridge": false,
+			"can": "(501.0002, 290.0)",
+			"cart": 0,
+			"frame": 240,
+			"player": "(387.9549, 251.1667)",
+			"state": "recover"
+		},
+		{
+			"bridge": false,
+			"can": "(494.8669, 290.0)",
+			"cart": 0,
+			"frame": 270,
+			"player": "(465.4558, 266.0911)",
+			"state": "windup"
+		},
+		{
+			"bridge": false,
+			"can": "(425.8667, 290.0)",
+			"cart": 0,
+			"frame": 300,
+			"player": "(495.972, 259.6327)",
+			"state": "charging"
+		},
+		{
+			"bridge": false,
+			"can": "(310.8664, 290.0)",
+			"cart": 0,
+			"frame": 330,
+			"player": "(554.7468, 236.9244)",
+			"state": "charging"
+		}
+	],
+	"used_grounded_bridge": false,
+	"wall_broken": true
+}

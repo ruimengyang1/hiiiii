@@ -1,0 +1,204 @@
+{
+	"cart_final": 2,
+	"cart_impacts": 2,
+	"catwalk": false,
+	"charges": 2,
+	"charging_rebounds": 0,
+	"completion_seconds": 6.1,
+	"deaths": 0,
+	"discoveries": [
+		{
+			"can": "(148.9335, 290.0)",
+			"can_state": "windup",
+			"cart": 0,
+			"catwalk": false,
+			"event": "lock",
+			"grounded": false,
+			"player": "(219.1806, 265.5304)",
+			"seconds": 1.07,
+			"target": 0,
+			"wall_broken": false
+		},
+		{
+			"can": "(148.9335, 290.0)",
+			"can_state": "charging",
+			"cart": 0,
+			"catwalk": false,
+			"event": "Cart impact",
+			"grounded": false,
+			"player": "(245.4306, 293.2416)",
+			"seconds": 1.65,
+			"target": 1,
+			"wall_broken": false
+		},
+		{
+			"can": "(155.0668, 290.0)",
+			"can_state": "windup",
+			"cart": 0,
+			"catwalk": true,
+			"event": "lock",
+			"grounded": false,
+			"player": "(245.4306, 293.2416)",
+			"seconds": 1.98,
+			"target": 1,
+			"wall_broken": false
+		},
+		{
+			"can": "(155.0668, 290.0)",
+			"can_state": "windup",
+			"cart": 1,
+			"catwalk": true,
+			"event": "Cart settled",
+			"grounded": false,
+			"player": "(227.7472, 293.5748)",
+			"seconds": 2.18,
+			"target": 1,
+			"wall_broken": false
+		},
+		{
+			"can": "(216.0, 290.0)",
+			"can_state": "charging",
+			"cart": 1,
+			"catwalk": true,
+			"event": "Cart impact",
+			"grounded": false,
+			"player": "(221.9252, 266.8133)",
+			"seconds": 2.8,
+			"target": 2,
+			"wall_broken": false
+		},
+		{
+			"can": "(221.8, 290.0)",
+			"can_state": "idle",
+			"cart": 2,
+			"catwalk": true,
+			"event": "Cart settled",
+			"grounded": false,
+			"player": "(274.5922, 208.9253)",
+			"seconds": 3.37,
+			"target": 2,
+			"wall_broken": false
+		},
+		{
+			"can": "(431.5, 290.0)",
+			"can_state": "idle",
+			"cart": 2,
+			"catwalk": false,
+			"event": "escape",
+			"grounded": false,
+			"player": "(549.184, 236.9252)",
+			"seconds": 6.1,
+			"target": 2,
+			"wall_broken": false
+		}
+	],
+	"environmental_stuns": 0,
+	"failures": [],
+	"hits": 2,
+	"idle_seconds": 0.35,
+	"input_only": true,
+	"rebounds": 1,
+	"resets": 0,
+	"reversals": 0,
+	"route": "support",
+	"trace": [
+		{
+			"bridge": false,
+			"can": "(96.80003, 290.0)",
+			"cart": 0,
+			"frame": 30,
+			"player": "(128.7641, 253.4241)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(142.8001, 290.0)",
+			"cart": 0,
+			"frame": 60,
+			"player": "(206.264, 260.1137)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(148.9335, 290.0)",
+			"cart": 0,
+			"frame": 90,
+			"player": "(245.4306, 290.9253)",
+			"state": "windup"
+		},
+		{
+			"bridge": true,
+			"can": "(155.0668, 290.0)",
+			"cart": 0,
+			"frame": 120,
+			"player": "(245.4306, 293.2416)",
+			"state": "windup"
+		},
+		{
+			"bridge": true,
+			"can": "(155.0668, 290.0)",
+			"cart": 1,
+			"frame": 150,
+			"player": "(218.2573, 306.9253)",
+			"state": "windup"
+		},
+		{
+			"bridge": true,
+			"can": "(216.0, 290.0)",
+			"cart": 1,
+			"frame": 180,
+			"player": "(236.7586, 256.8333)",
+			"state": "stagger"
+		},
+		{
+			"bridge": true,
+			"can": "(232.5334, 290.0)",
+			"cart": 2,
+			"frame": 210,
+			"player": "(290.4254, 208.9253)",
+			"state": "idle"
+		},
+		{
+			"bridge": true,
+			"can": "(278.5334, 290.0)",
+			"cart": 2,
+			"frame": 240,
+			"player": "(367.6061, 195.0633)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(324.5331, 290.0)",
+			"cart": 2,
+			"frame": 270,
+			"player": "(437.9253, 157.0633)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(370.5329, 290.0)",
+			"cart": 2,
+			"frame": 300,
+			"player": "(483.7586, 145.1887)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(416.5327, 290.0)",
+			"cart": 2,
+			"frame": 330,
+			"player": "(557.6395, 130.5078)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(431.5, 290.0)",
+			"cart": 2,
+			"frame": 360,
+			"player": "(558.9062, 205.2994)",
+			"state": "idle"
+		}
+	],
+	"used_grounded_bridge": false,
+	"wall_broken": false
+}

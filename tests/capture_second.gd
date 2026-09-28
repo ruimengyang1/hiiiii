@@ -9,7 +9,7 @@ func _initialize() -> void:
 func _run() -> void:
 	root.size = Vector2i(1152, 648)
 	DirAccess.make_dir_recursive_absolute(FOLDER)
-	level = load("res://scenes/foundry.tscn").instantiate()
+	level = load("res://scenes/foundry_second.tscn").instantiate()
 	root.add_child(level)
 	await physics_frame
 	for index in 4:

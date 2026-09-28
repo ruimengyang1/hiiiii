@@ -6,6 +6,23 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Replaced the four reset bays with one persistent, fully visible factory yard:
+  one Can, one three-position Cart, a cycling press, upper catwalk, shallow
+  maintenance loop, fractured partition and a physical escape destination.
+- Cart positions now configure loft access, nearby weight support and press
+  shielding, or exit-side height. Grounded Can can replace Cart weight; moving
+  Cart can expose the press and restore support through a new grounding chain.
+- Removed bay doors, transitions, room titles, objective checklists and actor
+  respawns between encounters. Death quickly returns only the worker while
+  preserving world changes; R deliberately rewinds the entire yard.
+- Kept the direction-locked charge and continuing-charge rebound; increased
+  Cart launch and air control for broad landings. Can searches the lane even
+  when the worker is perched above it. Added a visible charge lane and distinct
+  commitment and grounding sounds; health is the only persistent HUD readout.
+- Kept the worker visible during hurt protection, using a pulsing outline so
+  simultaneous player, Can and world changes remain readable.
+- Began the third redesign as one persistent malfunctioning factory yard;
+  preserved the four-arena version and its tests as a separate runnable scene.
 - Began the second Foundry redesign around bait, rebound, committed impact and
   immediate consequences; preserved the first redesign as a runnable legacy
   scene instead of retaining its escort route in the new launch experience.

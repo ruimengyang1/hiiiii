@@ -1,0 +1,160 @@
+{
+	"cart_final": 0,
+	"cart_impacts": 0,
+	"catwalk": true,
+	"charges": 0,
+	"charging_rebounds": 0,
+	"completion_seconds": 7.07,
+	"deaths": 0,
+	"discoveries": [
+		{
+			"can": "(279.2674, 290.0)",
+			"can_state": "stunned",
+			"cart": 0,
+			"catwalk": false,
+			"event": "grounded",
+			"grounded": true,
+			"player": "(262.9221, 239.9253)",
+			"seconds": 4.2,
+			"target": 0,
+			"wall_broken": false
+		},
+		{
+			"can": "(279.2674, 290.0)",
+			"can_state": "stunned",
+			"cart": 0,
+			"catwalk": true,
+			"event": "escape",
+			"grounded": true,
+			"player": "(549.184, 236.9252)",
+			"seconds": 7.07,
+			"target": 0,
+			"wall_broken": false
+		}
+	],
+	"environmental_stuns": 1,
+	"failures": [],
+	"hits": 0,
+	"idle_seconds": 0.97,
+	"input_only": true,
+	"rebounds": 1,
+	"resets": 0,
+	"reversals": 0,
+	"route": "ground",
+	"trace": [
+		{
+			"bridge": false,
+			"can": "(96.80003, 290.0)",
+			"cart": 0,
+			"frame": 30,
+			"player": "(128.7641, 253.4241)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(141.2668, 290.0)",
+			"cart": 0,
+			"frame": 60,
+			"player": "(202.6532, 172.8956)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(182.9335, 290.0)",
+			"cart": 0,
+			"frame": 90,
+			"player": "(208.2608, 154.2578)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(228.9337, 290.0)",
+			"cart": 0,
+			"frame": 120,
+			"player": "(271.6052, 136.9661)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(266.6005, 290.0)",
+			"cart": 0,
+			"frame": 150,
+			"player": "(269.9219, 153.9253)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(253.6004, 290.0)",
+			"cart": 0,
+			"frame": 180,
+			"player": "(268.3803, 153.9253)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(246.0005, 290.0)",
+			"cart": 0,
+			"frame": 210,
+			"player": "(262.9221, 153.9253)",
+			"state": "idle"
+		},
+		{
+			"bridge": false,
+			"can": "(282.0008, 290.0)",
+			"cart": 0,
+			"frame": 240,
+			"player": "(262.9221, 218.4253)",
+			"state": "idle"
+		},
+		{
+			"bridge": true,
+			"can": "(279.2674, 290.0)",
+			"cart": 0,
+			"frame": 270,
+			"player": "(289.7695, 205.4379)",
+			"state": "stunned"
+		},
+		{
+			"bridge": true,
+			"can": "(279.2674, 290.0)",
+			"cart": 0,
+			"frame": 300,
+			"player": "(367.1535, 189.2161)",
+			"state": "stunned"
+		},
+		{
+			"bridge": true,
+			"can": "(279.2674, 290.0)",
+			"cart": 0,
+			"frame": 330,
+			"player": "(437.9253, 151.2161)",
+			"state": "stunned"
+		},
+		{
+			"bridge": true,
+			"can": "(279.2674, 290.0)",
+			"cart": 0,
+			"frame": 360,
+			"player": "(488.9253, 150.1748)",
+			"state": "stunned"
+		},
+		{
+			"bridge": true,
+			"can": "(279.2674, 290.0)",
+			"cart": 0,
+			"frame": 390,
+			"player": "(558.3228, 130.4383)",
+			"state": "stunned"
+		},
+		{
+			"bridge": true,
+			"can": "(279.2674, 290.0)",
+			"cart": 0,
+			"frame": 420,
+			"player": "(557.4673, 216.0633)",
+			"state": "stunned"
+		}
+	],
+	"used_grounded_bridge": true,
+	"wall_broken": false
+}
