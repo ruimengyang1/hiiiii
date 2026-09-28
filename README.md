@@ -24,6 +24,7 @@ Open the project in Godot 4.7 and run it, or run `godot --path .`.
 | Move | A/D or arrow keys | Left stick or D-pad |
 | Jump | Space | A / Cross |
 | Downward strike | J or X, in midair | X / Square |
+| Recall current hint | H | — |
 | Rewind to stable dock | R | Y / Triangle |
 
 The intended learning path is: avoid the ram, bounce from it, notice that its
@@ -31,10 +32,25 @@ locked charge moves the cart, then plan where the ram and cart must be after
 each use. Pushing right at every opportunity fails at the live danger bay; the
 cart must first be staged as a platform so the player can reach its cut-off.
 
+On launch, a rescue briefing names the engineer, destination, and indirect
+control chain. During play, the top panel keeps the mission and factory states
+visible while the lower panel teaches only the currently relevant action.
+Large red charge arrows show the ram's committed direction; gold wiring shows
+which cart stop powers the live rail; red machinery is unsafe or locked and
+green machinery is ready. The first accidental ram contact is recoverable so
+the overhead-strike lesson can be learned without an immediate restart.
+
 See [SYSTEMIC_LEVEL_DESIGN.md](SYSTEMIC_LEVEL_DESIGN.md) for the audit,
 interaction matrix, five-beat structure, and intended route. Historical design
 work is preserved in [GAME_PLAN.md](GAME_PLAN.md) and
 [KINETIC_LEVEL_DESIGN.md](KINETIC_LEVEL_DESIGN.md).
+
+[CHARACTERISTICS_ALIGNMENT.md](CHARACTERISTICS_ALIGNMENT.md) maps the prototype
+to the course framework: deterministic versus stochastic play, observability,
+real-time granularity, play length, system types, player structure, heuristics,
+depth versus entropy, and strategy versus dexterity. The completion screen's
+Plan Quality rating rewards fewer unsafe actions and rewinds without penalizing
+time spent thinking.
 
 ## Checks
 

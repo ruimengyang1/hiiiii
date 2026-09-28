@@ -10,6 +10,7 @@ func _run() -> void:
 	root.add_child(level)
 	await physics_frame
 	await physics_frame
+	level._begin_play()
 
 	# Beat 1: a real downward strike on the central threat returns traversal lift.
 	level.ram.state = "stunned"
@@ -52,6 +53,7 @@ func _run() -> void:
 	level.player.global_position = level.GOAL_POSITION
 	await physics_frame
 	_check(level.mode == "complete", "player meets the delivered NPC to finish the complete route")
+	_check(level.result_label.visible and not level.hint_label.visible and "PLAN QUALITY" in level.result_label.text and "RANK" in level.result_label.text, "completion shows only its strategic rating panel")
 
 	level.player.active = false
 	level.ram.set_physics_process(false)

@@ -1,5 +1,7 @@
 extends AnimatableBody2D
 
+const PixelUI = preload("res://scripts/pixel_ui.gd")
+
 signal ram_impact(ram_speed: float, carriage_speed: float)
 signal directly_struck(player_speed: float, carriage_speed: float)
 signal stop_rebounded(side: int, incoming_speed: float, outgoing_speed: float)
@@ -38,6 +40,7 @@ var unsafe_station := -1
 var safety_enabled := false
 var final_lock_enabled := false
 var npc_mood := "watching"
+var pixel_font: Font
 
 func configure(at: Vector2, distance: float) -> void:
 	position = at
@@ -79,6 +82,8 @@ func _ready() -> void:
 	add_child(collision)
 	if kinetic_mode:
 		add_to_group("kinetic_carriage")
+	if systemic_mode:
+		pixel_font = PixelUI.make_font()
 
 func _physics_process(delta: float) -> void:
 	if systemic_mode:
@@ -243,11 +248,17 @@ func _draw() -> void:
 		if systemic_mode:
 			# The passenger is the objective and an always-visible state indicator.
 			var passenger := Color("fff1ac") if npc_mood in ["relieved", "ready"] else Color("ef9569") if npc_mood == "alarm" else Color("9ac6c7")
-			draw_circle(Vector2(7, -23), 5.0, passenger)
-			draw_rect(Rect2(2, -18, 10, 10), passenger)
-			draw_rect(Rect2(5, -27, 4, 2), Color("162230"))
+			draw_circle(Vector2(7, -25), 6.0, passenger)
+			draw_rect(Rect2(1, -20, 12, 12), passenger)
+			draw_rect(Rect2(2, -30, 10, 3), Color("162230"))
+			draw_rect(Rect2(4, -25, 2, 2), Color("162230"))
+			draw_rect(Rect2(9, -25, 2, 2), Color("162230"))
+			draw_rect(Rect2(-2, -18, 4, 8), passenger)
+			draw_rect(Rect2(13, -18, 4, 8), passenger)
 			if npc_mood == "pointing":
-				draw_line(Vector2(10, -17), Vector2(20, -22), passenger, 2.0)
+				draw_line(Vector2(13, -17), Vector2(24, -23), passenger, 2.0)
+			if pixel_font != null:
+				draw_string(pixel_font, Vector2(-24, -37), "ENGINEER", HORIZONTAL_ALIGNMENT_CENTER, 62, 7, passenger)
 		return
 	draw_rect(Rect2(-35, -5, 70, 10), Color("172636"))
 	draw_rect(Rect2(-33, -4, 66, 5), Color("a67853"))

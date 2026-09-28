@@ -173,6 +173,8 @@ func _check_ram_receivers() -> void:
 		var receiver := node as Node2D
 		if receiver == null or not receiver.has_method("receive_ram_impact"):
 			continue
+		if receiver.has_method("is_ram_passthrough") and bool(receiver.call("is_ram_passthrough")):
+			continue
 		if global_position.distance_to(receiver.global_position) > 27.0:
 			continue
 		var incoming := velocity_x
@@ -335,8 +337,19 @@ func _draw() -> void:
 			draw_rect(Rect2(-12, -8 + int(sin(clock * 18.0)), 7, 1), Color("9ac6c7"))
 			draw_rect(Rect2(5, -8 - int(sin(clock * 18.0)), 7, 1), Color("9ac6c7"))
 		"sentry", "kinetic_ram":
+			if kinetic_mode and state == "windup":
+				var arrow_color := Color("ff5f57") if int(state_time * 10.0) % 2 == 0 else Color("ffad66")
+				var arrow_end := Vector2(facing * 54.0, 0)
+				draw_line(Vector2(facing * 13.0, 0), arrow_end, arrow_color, 3.0)
+				draw_colored_polygon(PackedVector2Array([
+					arrow_end,
+					arrow_end + Vector2(-facing * 10.0, -7.0),
+					arrow_end + Vector2(-facing * 10.0, 7.0),
+				]), arrow_color)
+			if kinetic_mode and state == "stunned":
+				draw_arc(Vector2.ZERO, 15.0, 0.0, TAU, 16, Color("a9f4dd"), 2.0)
 			draw_rect(Rect2(-10, -10, 20, 20), ink)
-			draw_rect(Rect2(-8, -9, 16, 16), steel)
+			draw_rect(Rect2(-8, -9, 16, 16), Color("a9f4dd") if state == "stunned" else steel)
 			draw_rect(Rect2(-7, 5, 14, 3), brass)
 			draw_rect(Rect2(-2 + facing * 3, -5, 3, 3), Color("f46e5a") if state == "windup" else eye)
 			draw_rect(Rect2(-7, -12, 14, 3), brass)

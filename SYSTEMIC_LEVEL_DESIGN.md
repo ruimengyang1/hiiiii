@@ -96,3 +96,20 @@ safer bounce window before the cart cuts power, can reverse the ram with a
 moving strike, and can approach the final lock with either a natural charge or
 a redirected one. The cart itself remains stop-based so these variations do
 not become physics chaos.
+
+## Communication pass
+
+The playable build now introduces the fiction and rules before asking for
+execution. An opening card identifies the engineer, green destination, heavy
+cart limitation, and player→ram→cart chain. The persistent HUD separates the
+unchanging mission from observable machine state. A second panel gives one
+contextual instruction tied to the current cart stop, while short transition
+announcements explicitly connect cause and effect.
+
+World language matches the HUD: the engineer is larger and labeled, the ram's
+locked direction uses a long red arrow, cart stops have functional names,
+visible wiring connects the power plate to the live rail, and unsafe/ready
+states consistently use red/green. Early body contact is recoverable and pauses
+the ram long enough to explain the safe overhead strike. All UI labels use a
+non-antialiased monospaced font at integer sizes to remain crisp at the 3×
+window scale.

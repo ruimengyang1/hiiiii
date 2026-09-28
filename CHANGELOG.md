@@ -6,6 +6,42 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Fixed the activated RAM LOCK repeatedly reversing the ram and behaving like
+  a permanent wall; its first hit still rebounds for clear feedback, while an
+  active green lock now lets later ram movement pass through unchanged.
+- Fixed the empty completion panel remaining visible during play, where it
+  appeared as a large blank box over the level.
+- Changed contextual instructions from a permanently obstructive panel to a
+  temporary prompt shown after relevant state changes; players can recall the
+  current hint at any time with H.
+- Aligned System Link with the course characteristics framework: gameplay is
+  deterministic, relevant machine state is surfaced in the HUD, and real-time
+  play now includes safe thinking space outside ram range plus one-second
+  planning windows after major cart transitions.
+- Added a live ram readout for off-screen position, charge direction, and stun
+  state so strategic uncertainty comes from composing known rules rather than
+  hidden information.
+- Added a completion Plan Quality rating based on unsafe pushes, contact hits,
+  deaths, and rewinds; elapsed time is deliberately unscored so careful thought
+  outperforms fast brute force.
+- Revised later contextual prompts to communicate goals and object properties
+  without giving away the complete action sequence, preserving strategic depth
+  after the initial vocabulary tutorial.
+- Added an opening rescue briefing that identifies the stranded engineer,
+  destination, indirect-control premise, and player→ram→cart relationship
+  before the first input.
+- Reworked the in-game guidance into a persistent mission/status panel and
+  context-sensitive two-line instructions that explain the next interaction,
+  its required positioning, and why a blocked action failed.
+- Added explicit cause-and-effect announcements for checkpoints, the cart power
+  plate, CUT-OFF, the danger bay, RAM LOCK, and engineer delivery.
+- Enlarged and labeled the engineer, added readable ram direction arrows and
+  stun feedback, renamed rail stops, exposed factory wiring, and strengthened
+  red/green danger and destination language.
+- Made early ram contact deal recoverable damage and demonstrate the safe
+  overhead strike instead of immediately resetting an unfamiliar player.
+- Replaced blurry fallback UI text with a non-antialiased monospaced font,
+  integer-aligned panels, stronger contrast, and larger instructional text.
 - Rebuilt the launch experience as **System Link**, a continuous systemic
   puzzle-platformer centered on indirectly steering one persistent clockwork
   ram, a five-stop passenger cart, and its NPC to a station.

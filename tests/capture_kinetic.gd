@@ -8,10 +8,25 @@ func _run() -> void:
 	var prototype = scene.instantiate()
 	root.add_child(prototype)
 	await process_frame
+	await create_timer(0.12).timeout
+	if not _save(OS.get_temp_dir().path_join("system_link_briefing.png")):
+		printerr("SYSTEM LINK BRIEFING CAPTURE FAIL")
+		quit(1)
+		return
+	prototype._begin_play()
 	prototype.player.invulnerable_time = 0.0
 	await create_timer(0.2).timeout
 	if not _save(OS.get_temp_dir().path_join("system_link_start.png")):
 		printerr("KINETIC CAPTURE FAIL")
+		quit(1)
+		return
+	prototype.hint_time = 0.0
+	prototype.announcement_time = 0.0
+	prototype.announcement_label.hide()
+	prototype._update_ui()
+	await process_frame
+	if not _save(OS.get_temp_dir().path_join("system_link_unobstructed.png")):
+		printerr("SYSTEM LINK UNOBSTRUCTED CAPTURE FAIL")
 		quit(1)
 		return
 	prototype.carriage.force_station(2)
@@ -37,7 +52,16 @@ func _run() -> void:
 	if not _save(OS.get_temp_dir().path_join("system_link_ram_lock.png")):
 		quit(1)
 		return
-	print("SYSTEM LINK CAPTURE PASS: start, cut-off, and ram lock")
+	prototype._on_switch_activated("ram", prototype.final_switch.position)
+	prototype.carriage.force_station(4)
+	prototype._on_cart_station_changed(4)
+	prototype.player.global_position = prototype.GOAL_POSITION
+	prototype.camera.reset_smoothing()
+	await create_timer(0.12).timeout
+	if not _save(OS.get_temp_dir().path_join("system_link_complete.png")):
+		quit(1)
+		return
+	print("SYSTEM LINK CAPTURE PASS: briefing, start, cut-off, ram lock, and completion")
 	prototype.free()
 	await process_frame
 	quit(0)
