@@ -1,0 +1,74 @@
+{
+  "core": {
+    "chunk_id": "697ca4",
+    "wall_time_seconds": 0.617919667,
+    "exit_code": 0,
+    "original_token_count": 77,
+    "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nCORE TUNING: anticipation=0.55s speed=230 bounce=-305 stagger=0.38s impact recovery=0.20s Cart step=80px/0.40s\nSECOND CORE PASS: objective-free bait / commitment / continued rebound / impact / fast reuse / actual hard-wall grounding\n"
+  },
+  "system_checks": 23,
+  "systems": "passed",
+  "fresh_routes": [
+    "route_cart.json",
+    "route_can.json",
+    "route_high_can.json"
+  ],
+  "preserved_regressions": [
+    {
+      "name": "second_core",
+      "exit_code": 0
+    },
+    {
+      "name": "second_systems",
+      "exit_code": 0
+    },
+    {
+      "name": "smoke",
+      "exit_code": 0
+    },
+    {
+      "name": "route",
+      "exit_code": 0
+    },
+    {
+      "name": "interactions",
+      "exit_code": 0
+    },
+    {
+      "name": "rebound",
+      "exit_code": 0
+    },
+    {
+      "name": "dash",
+      "exit_code": 0
+    },
+    {
+      "name": "kinetic",
+      "exit_code": 0
+    },
+    {
+      "name": "kinetic_route",
+      "exit_code": 0
+    },
+    {
+      "name": "foundry_depth",
+      "exit_code": 0
+    },
+    {
+      "name": "foundry_rules",
+      "exit_code": 0
+    }
+  ],
+  "legacy_routes": [
+    {
+      "name": "foundry_route",
+      "exit_code": 0
+    },
+    {
+      "name": "foundry_route -- --weight",
+      "exit_code": 0
+    }
+  ],
+  "renderer_capture": "passed; six captures individually inspected",
+  "editor_import": "passed; no script errors"
+}

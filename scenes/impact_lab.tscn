@@ -2,5 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/action_foundry.gd" id="1"]
 
-[node name="Foundry" type="Node2D"]
+[node name="ImpactLab" type="Node2D"]
 script = ExtResource("1")
+greybox = true

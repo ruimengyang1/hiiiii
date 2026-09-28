@@ -8,7 +8,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(folder)
-	level = (load("res://scenes/foundry.tscn") as PackedScene).instantiate()
+	level = (load("res://scenes/foundry_legacy.tscn") as PackedScene).instantiate()
 	root.add_child(level)
 	await process_frame
 	level.set_physics_process(false)

@@ -6,7 +6,7 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var level = (load("res://scenes/foundry.tscn") as PackedScene).instantiate()
+	var level = (load("res://scenes/foundry_legacy.tscn") as PackedScene).instantiate()
 	root.add_child(level)
 	await _frames(3)
 	level.can.set_physics_process(false)
