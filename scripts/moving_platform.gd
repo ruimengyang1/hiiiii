@@ -253,8 +253,12 @@ func _draw() -> void:
 			draw_rect(Rect2(2, -30, 10, 3), Color("162230"))
 			draw_rect(Rect2(4, -25, 2, 2), Color("162230"))
 			draw_rect(Rect2(9, -25, 2, 2), Color("162230"))
-			draw_rect(Rect2(-2, -18, 4, 8), passenger)
-			draw_rect(Rect2(13, -18, 4, 8), passenger)
+			if npc_mood == "bracing":
+				draw_line(Vector2(1, -18), Vector2(-9, -15), passenger, 3.0)
+				draw_line(Vector2(13, -18), Vector2(24, -15), passenger, 3.0)
+			else:
+				draw_rect(Rect2(-2, -18, 4, 8), passenger)
+				draw_rect(Rect2(13, -18, 4, 8), passenger)
 			if npc_mood == "pointing":
 				draw_line(Vector2(13, -17), Vector2(24, -23), passenger, 2.0)
 			if pixel_font != null:

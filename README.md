@@ -1,72 +1,69 @@
-# Clockwork Ascent: System Link
+# Foundry / Future States
 
-The project launches **System Link**, a continuous real-time puzzle-platformer
-built from the original Clockwork Ascent movement, rebound, enemy, cart,
-effects, and audio systems.
+A continuous systemic platformer built from Clockwork Ascent. One malfunctioning
+maintenance Can, one engineer's transport, and a small set of industrial rules
+turn intent into force, lasting state, and future options.
 
-A clockwork ram pursues the player, but its charge direction locks after a
-clear windup. The player uses position to aim that charge, downward-strikes the
-ram for height, and sends it into a five-stop passenger cart. The cart carries
-an NPC and also acts as a platform, circuit weight, and progression key. A live
-rail, a visible danger bay, an elevated safety cut-off, and a ram-only final
-lock turn object position and interaction order into the main resources.
-
-The original two-level dexterity game remains available in
-`scenes/game.tscn`. The redesigned systemic experience is the launch scene in
-`scenes/kinetic_prototype.tscn`.
-
-## Play
-
-Open the project in Godot 4.7 and run it, or run `godot --path .`.
+Run the project in **Godot 4.7**. The launch scene is `scenes/foundry.tscn`.
+Deliver the engineer and restore evacuation power. The first-run design target
+is 10–15 minutes; independent human timing is still needed. Two input-only
+expert routes complete in approximately 3:12 and 3:18.
 
 | Action | Keyboard | Gamepad |
-| --- | --- | --- |
-| Move | A/D or arrow keys | Left stick or D-pad |
+|---|---|---|
+| Move | A/D or arrows | Left stick / D-pad |
 | Jump | Space | A / Cross |
-| Downward strike | J or X, in midair | X / Square |
-| Recall current hint | H | — |
-| Rewind to stable dock | R | Y / Triangle |
+| Airborne stomp | J / X | X / Square |
+| Rewind current encounter | R | Y / Triangle |
+| Fresh run | Shift + R; R after completion | Y after completion |
+| Pause / resume | Escape | Start |
+| Recall property hint | H | — |
 
-The intended learning path is: avoid the ram, bounce from it, notice that its
-locked charge moves the cart, then plan where the ram and cart must be after
-each use. Pushing right at every opportunity fails at the live danger bay; the
-cart must first be staged as a platform so the player can reach its cut-off.
+A red arrow announces a locked charge. The Can searches with lowered forks and
+magnetic suspension; a stomp or press impact grounds it for six seconds. Its
+stunned shell is safe, rebounds the player, and loads heavy plates. Cart wheels
+load the same plates. The roof also rebounds the player, so moving transport
+can remove useful access. Levers latch circuits without returning a bounce.
 
-On launch, a rescue briefing names the engineer, destination, and indirect
-control chain. During play, the top panel keeps the mission and factory states
-visible while the lower panel teaches only the currently relevant action.
-Large red charge arrows show the ram's committed direction; gold wiring shows
-which cart stop powers the live rail; red machinery is unsafe or locked and
-green machinery is ready. The first accidental ram contact is recoverable so
-the overhead-strike lesson can be learned without an immediate restart.
+Broken bulkheads, transport position, actor state, and circuit changes persist.
+R restores the complete local encounter snapshot. Death does the same after
+0.4 seconds. Safe upper perches give thinking space while the Can searches.
 
-See [SYSTEMIC_LEVEL_DESIGN.md](SYSTEMIC_LEVEL_DESIGN.md) for the audit,
-interaction matrix, five-beat structure, and intended route. Historical design
-work is preserved in [GAME_PLAN.md](GAME_PLAN.md) and
-[KINETIC_LEVEL_DESIGN.md](KINETIC_LEVEL_DESIGN.md).
+[DESIGN_SPEC.md](DESIGN_SPEC.md) contains the pre-implementation audit, five
+rules, encounter consequences, interaction matrix, and implementation
+refinements. [REDESIGN_REPORT.md](REDESIGN_REPORT.md) contains the final audit,
+learning curve, inspirations, novice/expert walkthroughs, test evidence,
+alternative strategies, changed files, and remaining problems.
 
-[CHARACTERISTICS_ALIGNMENT.md](CHARACTERISTICS_ALIGNMENT.md) maps the prototype
-to the course framework: deterministic versus stochastic play, observability,
-real-time granularity, play length, system types, player structure, heuristics,
-depth versus entropy, and strategy versus dexterity. The completion screen's
-Plan Quality rating rewards fewer unsafe actions and rewinds without penalizing
-time spent thinking.
+The earlier experiences remain runnable:
 
-## Checks
+- `scenes/kinetic_prototype.tscn`: prior System Link passenger-cart prototype.
+- `scenes/game.tscn`: original Foundry and Relay Shaft levels, including dash.
 
-Run the integration checks from this directory:
+`GAME_PLAN.md`, `KINETIC_LEVEL_DESIGN.md`, `SYSTEMIC_LEVEL_DESIGN.md`, and
+`CHARACTERISTICS_ALIGNMENT.md` describe those historical iterations.
+
+## Verification
+
+Run from this directory, using your Godot executable:
 
 ```sh
-godot --headless --path . --script res://tests/smoke.gd
-godot --headless --path . --script res://tests/route.gd
-godot --headless --path . --script res://tests/interactions.gd
-godot --headless --path . --script res://tests/rebound.gd
-godot --headless --path . --script res://tests/dash.gd
-godot --headless --path . --script res://tests/kinetic.gd
-godot --headless --path . --script res://tests/kinetic_route.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_depth.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_rules.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_route.gd
+godot --headless --path . --fixed-fps 60 --script res://tests/foundry_route.gd -- --weight
 ```
 
-The first five checks protect the preserved original game. The two kinetic
-checks cover System Link's shared rules, safety gates, checkpoint restore, and
-complete state route. Optional capture scripts save screenshots to the system
-temporary folder when a graphics display is available.
+The route checks start fresh and use only player inputs: no teleports, cart
+station setters, scripted impacts, switch activation calls, or progression
+flag writes. Depth/rule checks use deliberate fixtures to probe failures and
+recovery. Headless checks suppress audio playback because accelerated physics
+does not advance the real-time audio mixer; normal graphical play retains all
+existing generated sounds.
+
+The preserved regression checks are `smoke.gd`, `route.gd`, `interactions.gd`,
+`rebound.gd`, `dash.gd`, `kinetic.gd`, and `kinetic_route.gd` in `tests/`.
+
+With a graphics display, run `tests/capture_foundry.gd` to refresh the seven
+fixture screenshots in `artifacts/screenshots/`. Those are visual inspections,
+not substitutes for the fresh input-only routes.

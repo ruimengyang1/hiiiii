@@ -42,6 +42,7 @@ var dash_target: Area2D
 var dash_entry_velocity := Vector2.ZERO
 var dash_aim_direction := Vector2.ZERO
 var dash_preview_target: Area2D
+var air_acceleration := AIR_ACCEL
 
 func _ready() -> void:
 	name = "Player"
@@ -90,7 +91,7 @@ func _physics_process(delta: float) -> void:
 	var direction := Input.get_axis("move_left", "move_right")
 	if hurt_lock <= 0.0:
 		if absf(direction) > 0.05:
-			velocity.x = move_toward(velocity.x, direction * RUN_SPEED, (GROUND_ACCEL if is_on_floor() else AIR_ACCEL) * delta)
+			velocity.x = move_toward(velocity.x, direction * RUN_SPEED, (GROUND_ACCEL if is_on_floor() else air_acceleration) * delta)
 			facing = 1 if direction > 0.0 else -1
 		else:
 			velocity.x = move_toward(velocity.x, 0.0, (GROUND_FRICTION if is_on_floor() else AIR_FRICTION) * delta)
@@ -185,6 +186,8 @@ func _check_strike() -> void:
 	query.collide_with_bodies = true
 	for result in get_world_2d().direct_space_state.intersect_shape(query, 8):
 		var target: Object = result["collider"]
+		if target.has_method("accepts_strike_at") and not target.accepts_strike_at(global_position):
+			continue
 		var connected := false
 		if target.has_method("receive_kinetic_strike"):
 			connected = target.receive_kinetic_strike(velocity.x)
@@ -192,10 +195,15 @@ func _check_strike() -> void:
 			connected = target.receive_strike()
 		if connected:
 			attack_time = 0.0
-			velocity.y = REBOUND_SPEED
+			var launch_speed: float = target.strike_rebound_speed() if target.has_method("strike_rebound_speed") else REBOUND_SPEED
+			if launch_speed < 0.0:
+				if target.has_method("strike_surface_y"):
+					global_position.y = float(target.strike_surface_y()) - 9.0
+				velocity.y = launch_speed
 			jump_cut_available = false
 			coyote_time = 0.0
-			rebounded.emit(global_position + Vector2(0.0, 10.0))
+			if launch_speed < 0.0:
+				rebounded.emit(global_position + Vector2(0.0, 10.0))
 			return
 
 func take_damage(source: Vector2) -> void:

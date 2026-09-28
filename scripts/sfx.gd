@@ -15,6 +15,10 @@ func _ready() -> void:
 	samples["alarm"] = _make_sound(185.0, 0.32, 0.15, true)
 
 func play(kind: String) -> void:
+	# Accelerated headless physics does not advance the real-time audio mixer.
+	# Avoid accumulating unfinished playback voices in non-visual checks.
+	if DisplayServer.get_name() == "headless":
+		return
 	if not samples.has(kind):
 		return
 	var player := AudioStreamPlayer.new()

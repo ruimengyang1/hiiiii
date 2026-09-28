@@ -6,6 +6,46 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Replaced the launch experience with **Foundry / Future States**, a connected
+  inspection, freight, service-return, delivery, and evacuation route centered
+  on one persistent Can and engineer transport. Earlier prototype scenes remain
+  available.
+- Added a deterministic Can search, longer readable direction lock, bounded
+  straight charge, safe recovery, and six-second stomp stun. Stomping now spends
+  charge availability in the new demo instead of directly steering the Can.
+- Added a shared force-receiver contract for rail transport and permanently
+  fractured bulkheads; solid gates and level geometry now stop the Can.
+- Made transport movement reversible and physically stall at closed machinery.
+  Moving a useful roof or plate weight changes later access; stalled transport
+  resumes when its route reopens and can be driven back to recover its roof.
+- Added physical weight plates that accept either the Cart or a stunned Can,
+  visible release timers and wires, and lasting strike-operated gate releases.
+- Reused the original crushers as shared hazards: their actual spike regions
+  stun the Can and hurt the player, their body blocks transport, and their top
+  remains a safe platform. An isolated crusher no longer hurts the player.
+- Added complete encounter snapshots, automatic short death rewinds, deliberate
+  R rewind, Shift+R fresh restart, Escape pause, and optional H property hints.
+  Removed experiment-penalizing rank scoring from the new demo.
+- Added raised transport chassis and visible Can impact forks to communicate
+  why a searching Can can pass underneath while a charging Can transfers force.
+- Made stalled transport roofs useful recovery platforms, increased clearance
+  and warning time at the foundry presses, added fixed warning lamps and sound,
+  widened stomp detection, and made gates wait for occupants before closing.
+- Kept the delivery checkpoint local to both the player and Can so a rewind
+  cannot leave the useful actor far back in an earlier section.
+- Made foundry levers latch without supplying rebound energy, keeping height
+  dependent on the Can and Cart; fixed broad stomps catching the Cart's underside
+  or corner when the player aims for a nearby floor lever.
+- Anchored foundry Can and Cart rebounds to the struck top surface, eliminating
+  effective height differences between early and late hits; retuned ledges to
+  provide forgiving, distinct Can and Cart traversal roles.
+- Increased foundry air control so a sound bounce plan is easier to execute
+  when the player changes direction; the preserved older scenes retain their
+  existing movement tuning.
+- Added a visible passenger bracing pose during transport impacts and movement.
+- Moved hints above the active characters and exposed separate circuit wires
+  above the floor, making machine dependencies readable without HUD obstruction.
+
 - Fixed the activated RAM LOCK repeatedly reversing the ram and behaving like
   a permanent wall; its first hit still rebounds for clear feedback, while an
   active green lock now lets later ram movement pass through unchanged.

@@ -3,7 +3,13 @@
 ## Pre-redesign audit
 
 The active Kinetic Clockwork prototype began on a safe island. The player
-downward-struck a continuously homing ram, transferred horizontal momentum to
+do
+
+
+
+
+
+wnward-struck a continuously homing ram, transferred horizontal momentum to
 it, let it transfer momentum into a freely coasting carriage, met a second ram,
 then used the carriage's return from the far rail stop to reach an upper exit.
 The persistent physical state was promising, but progress mostly rewarded
