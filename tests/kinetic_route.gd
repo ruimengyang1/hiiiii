@@ -6,73 +6,68 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var level = (load("res://scenes/kinetic_prototype.tscn") as PackedScene).instantiate()
-	root.add_child(level)
-	await physics_frame
-	await physics_frame
-	level._begin_play()
-
-	# Beat 1: a real downward strike on the central threat returns traversal lift.
-	level.ram.state = "stunned"
-	level.ram.state_time = 2.0
-	level.ram.monitoring = false
-	level.player.global_position = level.ram.global_position + Vector2(0, -27)
-	level.player.velocity = Vector2(80, 20)
-	Input.action_press("attack")
-	await physics_frame
-	await physics_frame
-	Input.action_release("attack")
-	_check(level.player.velocity.y < -180.0, "threat becomes a forgiving bounce tool")
-	level.ram.monitoring = true
-
-	# Beats 2-3: use general ram momentum to advance to transfer and circuit stops.
-	await _push_cart(level, 1)
-	_check(level.checkpoint_station == 1, "first passenger dock becomes a nearby rewind point")
-	await _push_cart(level, 1)
-	_check(level.carriage.station_index == 2 and level.circuit_powered, "cart position disables the shared live rail")
-
-	# Beat 4: blindly repeating push-right reveals the cut-off prerequisite.
-	var rejected: bool = not level.carriage.request_station_push(1, 138.0)
-	if rejected:
-		level._on_cart_push_rejected(3)
-	_check(rejected and level.carriage.station_index == 2, "reasonable early heuristic fails without losing the useful state")
-	_check("CUT-OFF" in level.last_event, "failure explains the strategic change instead of hiding a trap")
-	level.safety_switch.receive_strike()
+	var campaign = (load("res://scenes/kinetic_prototype.tscn") as PackedScene).instantiate()
+	root.add_child(campaign)
 	await process_frame
-	_check(level.safety_enabled, "player interaction changes the cart's future")
-	await _push_cart(level, 1)
-	_check(level.carriage.station_index == 3 and level.final_switch.armed, "safe bay arms the previously visible ram lock")
+	for index in campaign.LEVEL_COUNT:
+		campaign._build_level(index)
+		await process_frame
+		_check(campaign.mode == "play" and campaign.player.active, "level %d starts from a fresh playable spawn" % (index + 1))
+		_solve_state(campaign, index)
+		campaign._update_goal_state()
+		_check(campaign.goal_enabled, "level %d has a complete state route" % (index + 1))
+		campaign.player.global_position = campaign.goal_position
+		campaign._update_goal_state()
+		_check(campaign.mode == "transition", "level %d accepts its solved state at the exit" % (index + 1))
+		campaign.failure_ticket += 1
 
-	# Beat 5: ram interaction unlocks the route, then the same cart rule pays off.
-	_check(level.final_switch.position.x < level.carriage.position.x, "armed lock asks the player to bring the ram back before final progress")
-	var ram_return: float = level.final_switch.receive_ram_impact(-138.0)
-	await process_frame
-	_check(level.final_lock_enabled and ram_return > 0.0, "ram lock returns the barrel on the useful cart-pushing side")
-	await _push_cart(level, 1)
-	_check(level.carriage.station_index == 4 and level.npc_arrived, "planned final impact delivers the NPC")
-	level.player.global_position = level.GOAL_POSITION
-	await physics_frame
-	_check(level.mode == "complete", "player meets the delivered NPC to finish the complete route")
-	_check(level.result_label.visible and not level.hint_label.visible and "PLAN QUALITY" in level.result_label.text and "RANK" in level.result_label.text, "completion shows only its strategic rating panel")
-
-	level.player.active = false
-	level.ram.set_physics_process(false)
-	level.carriage.set_physics_process(false)
-	level.free()
+	campaign.level_index = 6
+	campaign._finish_campaign()
+	_check(campaign.mode == "campaign_complete" and campaign.result_panel.visible and "7 SHORT SYSTEM LEVELS CLEARED" in campaign.result_label.text, "seven-level campaign produces a clear mastery finish")
+	campaign.mode = "campaign_complete"
+	if is_instance_valid(campaign.player):
+		campaign.player.active = false
+	if is_instance_valid(campaign.ram):
+		campaign.ram.set_physics_process(false)
+	campaign.free()
 	await process_frame
 	if failures.is_empty():
-		print("SYSTEMIC ROUTE PASS: bounce, cart circuit, heuristic break, cut-off, ram lock, NPC delivery")
+		print("CAN CAMPAIGN ROUTE PASS: all seven fresh spawns, two reversals, combination level, and mastery finish")
 		quit(0)
 	else:
 		for failure in failures:
-			printerr("SYSTEMIC ROUTE FAIL: ", failure)
+			printerr("CAN CAMPAIGN ROUTE FAIL: ", failure)
 		quit(1)
 
-func _push_cart(level: Node, direction: int) -> void:
-	var accepted: bool = level.carriage.request_station_push(direction, 138.0)
-	_check(accepted, "planned ram impact is accepted at station %d" % level.carriage.station_index)
-	for _frame in 40:
-		await physics_frame
+func _solve_state(campaign: Node, index: int) -> void:
+	match index:
+		0:
+			campaign.goal_enabled = true
+		1, 2:
+			campaign.ram.wedge_at(campaign.wedge_position)
+			campaign._update_pressure_logic()
+		3:
+			campaign.upper_latch = true
+			campaign.ram.wedge_at(campaign.wedge_position)
+			campaign._update_pressure_logic()
+		4:
+			campaign.laser.receive_ram_impact(130.0)
+		5:
+			# Laser-first is one valid order; switch-first is tested separately below.
+			campaign.laser.receive_ram_impact(130.0)
+			campaign.ram.wedge_at(campaign.wedge_position)
+			campaign._update_pressure_logic()
+			_check(campaign.fan.active and campaign.laser.sensor_active, "level 6 combines held fan power and laser sensor response")
+		6:
+			var rejected_before: int = campaign.unsafe_commits
+			campaign.laser.receive_ram_impact(130.0)
+			_check(campaign.unsafe_commits == rejected_before + 1 and not campaign.laser.sensor_active, "level 7 reveals that an unpowered laser impact is incomplete")
+			campaign.ram.wedge_at(campaign.wedge_position)
+			campaign._update_pressure_logic()
+			campaign.power_latch = true
+			campaign._update_mastery_power()
+			campaign.laser.receive_ram_impact(130.0)
+			_check(campaign.fan.active and campaign.laser.sensor_active, "level 7 chains switch, fan, power latch, laser, and sensor")
 
 func _check(condition: bool, message: String) -> void:
 	if not condition:

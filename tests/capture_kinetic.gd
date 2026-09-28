@@ -4,68 +4,57 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var scene := load("res://scenes/kinetic_prototype.tscn") as PackedScene
-	var prototype = scene.instantiate()
-	root.add_child(prototype)
+	var campaign = (load("res://scenes/kinetic_prototype.tscn") as PackedScene).instantiate()
+	root.add_child(campaign)
 	await process_frame
-	await create_timer(0.12).timeout
-	if not _save(OS.get_temp_dir().path_join("system_link_briefing.png")):
-		printerr("SYSTEM LINK BRIEFING CAPTURE FAIL")
+	await create_timer(0.1).timeout
+	if not _save("can_campaign_card.png"):
 		quit(1)
 		return
-	prototype._begin_play()
-	prototype.player.invulnerable_time = 0.0
-	await create_timer(0.2).timeout
-	if not _save(OS.get_temp_dir().path_join("system_link_start.png")):
-		printerr("KINETIC CAPTURE FAIL")
+
+	campaign._build_level(1)
+	campaign.ram.wedge_at(campaign.wedge_position)
+	campaign._update_pressure_logic()
+	campaign.hint_time = 0.0
+	campaign.announcement_time = 0.0
+	campaign._update_transient_ui()
+	await create_timer(0.1).timeout
+	if not _save("can_campaign_fan.png"):
 		quit(1)
 		return
-	prototype.hint_time = 0.0
-	prototype.announcement_time = 0.0
-	prototype.announcement_label.hide()
-	prototype._update_ui()
-	await process_frame
-	if not _save(OS.get_temp_dir().path_join("system_link_unobstructed.png")):
-		printerr("SYSTEM LINK UNOBSTRUCTED CAPTURE FAIL")
+
+	campaign._build_level(4)
+	campaign.hint_time = 0.0
+	campaign.announcement_time = 0.0
+	campaign._update_transient_ui()
+	await create_timer(0.1).timeout
+	if not _save("can_campaign_laser.png"):
 		quit(1)
 		return
-	prototype.carriage.force_station(2)
-	prototype._on_cart_station_changed(2)
-	prototype.ram.position = Vector2(850, 172)
-	prototype.ram.state = "windup"
-	prototype.ram.state_time = 0.3
-	prototype.player.global_position = Vector2(900, 140)
-	prototype.camera.reset_smoothing()
-	await create_timer(0.12).timeout
-	if not _save(OS.get_temp_dir().path_join("system_link_cutoff.png")):
+	campaign.laser.receive_ram_impact(130.0)
+	await create_timer(0.1).timeout
+	if not _save("can_campaign_sensor.png"):
 		quit(1)
 		return
-	prototype._on_switch_activated("strike", prototype.safety_switch.position)
-	prototype.carriage.force_station(3)
-	prototype._on_cart_station_changed(3)
-	prototype.ram.position = Vector2(1115, 172)
-	prototype.ram.state = "windup"
-	prototype.ram.state_time = 0.3
-	prototype.player.global_position = Vector2(1000, 145)
-	prototype.camera.reset_smoothing()
-	await create_timer(0.12).timeout
-	if not _save(OS.get_temp_dir().path_join("system_link_ram_lock.png")):
+
+	campaign._build_level(6)
+	campaign.ram.wedge_at(campaign.wedge_position)
+	campaign._update_pressure_logic()
+	campaign.power_latch = true
+	campaign._update_mastery_power()
+	campaign.laser.receive_ram_impact(130.0)
+	campaign.hint_time = 0.0
+	campaign.announcement_time = 0.0
+	campaign._update_transient_ui()
+	await create_timer(0.1).timeout
+	if not _save("can_campaign_mastery.png"):
 		quit(1)
 		return
-	prototype._on_switch_activated("ram", prototype.final_switch.position)
-	prototype.carriage.force_station(4)
-	prototype._on_cart_station_changed(4)
-	prototype.player.global_position = prototype.GOAL_POSITION
-	prototype.camera.reset_smoothing()
-	await create_timer(0.12).timeout
-	if not _save(OS.get_temp_dir().path_join("system_link_complete.png")):
-		quit(1)
-		return
-	print("SYSTEM LINK CAPTURE PASS: briefing, start, cut-off, ram lock, and completion")
-	prototype.free()
+	print("CAN CAMPAIGN CAPTURE PASS: card, fan, laser, sensor, and mastery")
+	campaign.free()
 	await process_frame
 	quit(0)
 
-func _save(path: String) -> bool:
+func _save(filename: String) -> bool:
 	var image := root.get_texture().get_image()
-	return image != null and image.save_png(path) == OK
+	return image != null and image.save_png(OS.get_temp_dir().path_join(filename)) == OK

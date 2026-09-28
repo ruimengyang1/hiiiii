@@ -6,6 +6,22 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Replaced the launch flow with **Can / Useful Danger**, seven compact stages
+  built around reading, baiting, wedging, and redirecting one dangerous Can.
+- Added reusable weight switches, a sustained and visibly animated fan updraft,
+  a force-rotated laser rig, a deterministic beam sensor, and extending bridges.
+- Added focused teaching cards, context hints, readable mechanism labels and
+  immediate cause-and-effect announcements without obstructing live play.
+- Added two fair expectation reversals: committing the Can before using its
+  bounce loses a needed resource, while an unpowered laser rejects early hits
+  and teaches the dependency before the mastery chain.
+- Added a stable wedged Can state that can hold switches or become a fixed
+  bounce point, with a downward strike providing a consistent release action.
+- Retuned the launch presentation around a crisp non-antialiased pixel font,
+  strong beam/fan/switch state colors, compact retries, and minimal dead travel.
+- Added deterministic coverage for Can intent and bounce, wedging, weight
+  switches, fan lift, laser rotation, sensor/bridge response, every fresh level
+  spawn, combination puzzles, reversals, and campaign completion.
 - Replaced the four reset bays with one persistent, fully visible factory yard:
   one Can, one three-position Cart, a cycling press, upper catwalk, shallow
   maintenance loop, fractured partition and a physical escape destination.

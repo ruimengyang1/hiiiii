@@ -39,6 +39,7 @@ var systemic_mode := false
 var charge_enabled := true
 var trigger_range := KINETIC_TRIGGER_RANGE
 var charge_impulse := KINETIC_CHARGE_IMPULSE
+var wedged := false
 
 func configure(enemy_kind: String, at: Vector2, patrol_left: float, patrol_right: float) -> void:
 	kind = enemy_kind
@@ -148,6 +149,8 @@ func _update_kinetic_ram(delta: float) -> void:
 			if state_time <= 0.0:
 				state = "recover"
 				state_time = 0.28
+		"wedged":
+			velocity_x = 0.0
 	position.x += velocity_x * delta
 	if position.x < left_bound:
 		var incoming_left := velocity_x
@@ -265,6 +268,8 @@ func receive_kinetic_strike(player_velocity_x: float) -> bool:
 		-KINETIC_MAX_SPEED,
 		KINETIC_MAX_SPEED
 	)
+	wedged = false
+	charge_enabled = true
 	flash = 0.14
 	state = "coast"
 	state_time = 0.0
@@ -273,12 +278,23 @@ func receive_kinetic_strike(player_velocity_x: float) -> bool:
 	return true
 
 func receive_stun(duration: float = 0.9) -> void:
+	wedged = false
 	velocity_x = 0.0
 	state = "stunned"
 	state_time = duration
 	cooldown = duration
 	flash = duration
 	stunned.emit(duration)
+
+func wedge_at(at: Vector2) -> void:
+	global_position = at
+	velocity_x = 0.0
+	wedged = true
+	charge_enabled = false
+	state = "wedged"
+	state_time = 0.0
+	flash = 0.2
+	queue_redraw()
 
 func set_charge_enabled(enabled: bool) -> void:
 	charge_enabled = enabled
@@ -298,6 +314,7 @@ func reset_kinetic() -> void:
 	alive = true
 	monitoring = true
 	charge_enabled = true
+	wedged = false
 	queue_redraw()
 
 func _on_body_entered(body: Node2D) -> void:
@@ -346,10 +363,10 @@ func _draw() -> void:
 					arrow_end + Vector2(-facing * 10.0, -7.0),
 					arrow_end + Vector2(-facing * 10.0, 7.0),
 				]), arrow_color)
-			if kinetic_mode and state == "stunned":
+			if kinetic_mode and state in ["stunned", "wedged"]:
 				draw_arc(Vector2.ZERO, 15.0, 0.0, TAU, 16, Color("a9f4dd"), 2.0)
 			draw_rect(Rect2(-10, -10, 20, 20), ink)
-			draw_rect(Rect2(-8, -9, 16, 16), Color("a9f4dd") if state == "stunned" else steel)
+			draw_rect(Rect2(-8, -9, 16, 16), Color("a9f4dd") if state in ["stunned", "wedged"] else steel)
 			draw_rect(Rect2(-7, 5, 14, 3), brass)
 			draw_rect(Rect2(-2 + facing * 3, -5, 3, 3), Color("f46e5a") if state == "windup" else eye)
 			draw_rect(Rect2(-7, -12, 14, 3), brass)

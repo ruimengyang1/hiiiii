@@ -2,373 +2,435 @@ extends Node2D
 
 const PlayerScene = preload("res://scripts/player.gd")
 const EnemyScene = preload("res://scripts/enemy.gd")
-const PlatformScene = preload("res://scripts/moving_platform.gd")
-const SwitchScene = preload("res://scripts/systemic_switch.gd")
+const PressureScene = preload("res://scripts/can_pressure_switch.gd")
+const FanScene = preload("res://scripts/can_fan.gd")
+const LaserScene = preload("res://scripts/can_laser_rig.gd")
+const StrikeSwitchScene = preload("res://scripts/systemic_switch.gd")
 const EffectsScene = preload("res://scripts/effects.gd")
 const SfxScene = preload("res://scripts/sfx.gd")
 const PixelUI = preload("res://scripts/pixel_ui.gd")
 
-const WORLD_WIDTH := 1760.0
-const START_POSITION := Vector2(48, 173)
-const RAM_START := Vector2(108, 172)
-const CARRIAGE_START := Vector2(455, 166)
-const CART_STATIONS := [455.0, 680.0, 900.0, 1160.0, 1480.0]
-const ELECTRIC_RECT := Rect2(1010, 166, 42, 16)
-const GOAL_POSITION := Vector2(1605, 151)
+const LEVEL_COUNT := 7
+const FLOOR_Y := 190.0
+const LEVEL_TITLES := [
+	"1  READ THE CAN",
+	"2  HEAVY CURRENT",
+	"3  USEFUL JAM",
+	"4  BEFORE YOU COMMIT",
+	"5  ANGLE OF ATTACK",
+	"6  POWER AND AIM",
+	"7  SYSTEM MASTERY",
+]
+const LEVEL_GOALS := [
+	"Read the arrow, dodge the charge, then bounce from above.",
+	"Trap the Can on HEAVY SWITCH to sustain the fan.",
+	"Wedge the Can in the clamp; its final position is the tool.",
+	"Use the roaming Can before committing it to the switch.",
+	"Drive the Can into the emitter until its beam finds SENSOR.",
+	"Use both the held switch/fan and the laser/sensor bridge.",
+	"Chain every learned rule. No new mechanic remains.",
+]
 
+var world_root: Node2D
 var player: CharacterBody2D
 var ram: Area2D
-var counter_ram: Area2D # Alias retained for older diagnostic scripts.
-var rams: Array[Area2D] = []
-var carriage: AnimatableBody2D
-var safety_switch: Area2D
-var final_switch: Area2D
-var camera: Camera2D
+var pressure: Node2D
+var fan: Node2D
+var laser: Node2D
+var strike_switch: Area2D
 var effects: Node2D
 var sfx: Node
+var ui_font: Font
+
+var level_index := 0
+var mode := "card"
 var blocks: Array[Rect2] = []
 var spike_rects: Array[Rect2] = []
-var mode := "play"
-var attempts := 1
-var last_event := "The ram is dangerous. Its path is also your route."
-var reset_ticket := 0
-var checkpoint_station := 0
-var circuit_powered := false
-var safety_enabled := false
-var final_lock_enabled := false
-var npc_arrived := false
-var shake_time := 0.0
-var briefing_active := false
-var announcement_time := 0.0
-var ui_font: Font
-var contact_lesson_seen := false
-var contact_hits := 0
-var unsafe_pushes := 0
-var rewinds_used := 0
-var deaths_count := 0
-var hint_time := 0.0
+var bridge_rect := Rect2()
+var bridge_body: StaticBody2D
+var goal_position := Vector2.ZERO
+var goal_enabled := false
+var wedge_position := Vector2.ZERO
+var has_wedge := false
+var upper_latch := false
+var power_latch := false
+var wedge_release_grace := 0.0
+var failure_ticket := 0
+var attempts := 0
+var level_start_time := 0.0
+var total_time := 0.0
+var unsafe_commits := 0
 
-var objective_label: Label
-var help_label: Label
+var top_label: Label
 var hint_label: Label
 var hint_back: ColorRect
 var announcement_label: Label
+var card_panel: ColorRect
+var card_title: Label
+var card_body: Label
+var result_panel: ColorRect
 var result_label: Label
-var briefing_panel: ColorRect
+var hint_time := 0.0
+var announcement_time := 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_font = PixelUI.make_font()
 	_setup_inputs()
-	_build_level()
-	_create_actors()
-	_create_ui()
-	reset_encounter(true)
-	_show_briefing()
-
-func _physics_process(delta: float) -> void:
-	if briefing_active:
-		if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("attack") or Input.is_action_just_pressed("ui_accept"):
-			_begin_play()
-		_update_ui()
-		queue_redraw()
-		return
-	if Input.is_action_just_pressed("restart"):
-		attempts += 1
-		if mode == "complete":
-			reset_encounter(true)
-			_show_briefing()
-		else:
-			rewinds_used += 1
-			reset_encounter(false)
-	if mode == "play" and player.global_position.y > 230.0:
-		player.kill()
-	if mode == "play" and not circuit_powered and ELECTRIC_RECT.grow(5.0).has_point(ram.global_position) and ram.state == "coast":
-		ram.receive_stun(0.9)
-		last_event = "LIVE RAIL: it stops every actor. The cart's brass plate can cut power."
-		effects.burst(ram.global_position, Color("a9f4dd"), 12)
-		sfx.play("hit")
-	if mode == "play" and npc_arrived and player.global_position.distance_to(GOAL_POSITION) < 28.0:
-		_complete_level()
-	if Input.is_action_just_pressed("hint"):
-		_show_context_hint(5.0)
-	_update_camera_shake(delta)
-	announcement_time = maxf(0.0, announcement_time - delta)
-	hint_time = maxf(0.0, hint_time - delta)
-	if announcement_label != null:
-		announcement_label.visible = announcement_time > 0.0
-	_update_ui()
-	queue_redraw()
-
-func _build_level() -> void:
-	# Beat 1: a broad-topped ledge is too high for a normal jump but comfortably
-	# reachable from the ram's stronger rebound.
-	_add_block(Rect2(0, 182, 245, 34))
-	_add_block(Rect2(245, 130, 53, 86))
-	_add_block(Rect2(298, 182, 1462, 34))
-	# Beat 4: the cart stages the player below this cut-off balcony.
-	_add_block(Rect2(885, 104, 145, 10), true)
-	_add_block(Rect2(1060, 132, 90, 10), true)
-	_add_block(Rect2(-16, 0, 16, 216))
-	_add_block(Rect2(WORLD_WIDTH, 0, 16, 216))
-	_add_electric_hazard()
-
-func _create_actors() -> void:
-	carriage = PlatformScene.new()
-	carriage.name = "PassengerCart"
-	carriage.configure_systemic(CARRIAGE_START, PackedFloat32Array(CART_STATIONS))
-	carriage.unsafe_station = 3
-	carriage.ram_impact.connect(_on_ram_hit_carriage)
-	carriage.directly_struck.connect(_on_carriage_struck)
-	carriage.station_changed.connect(_on_cart_station_changed)
-	carriage.push_rejected.connect(_on_cart_push_rejected)
-	carriage.npc_reacted.connect(_on_npc_reacted)
-	add_child(carriage)
-
-	ram = EnemyScene.new() as Area2D
-	ram.name = "ClockworkRam"
-	ram.configure_systemic_ram(RAM_START, 70.0, 1530.0)
-	ram.touched_player.connect(_on_ram_touched_player)
-	ram.kinetic_struck.connect(_on_ram_struck)
-	ram.carriage_hit.connect(func(_ram_speed: float, _cart_speed: float) -> void: sfx.play("hit"))
-	ram.charge_locked.connect(_on_ram_charge_locked)
-	ram.stunned.connect(func(_duration: float) -> void: last_event = "The live rail stunned the ram; its inert shell is a safe bounce target.")
-	add_child(ram)
-	rams.append(ram)
-	counter_ram = ram
-
-	safety_switch = SwitchScene.new() as Area2D
-	safety_switch.configure("strike", Vector2(952, 95), "CUT-OFF")
-	safety_switch.activated.connect(_on_switch_activated)
-	add_child(safety_switch)
-
-	final_switch = SwitchScene.new() as Area2D
-	final_switch.configure("ram", Vector2(1068, 161), "RAM LOCK")
-	final_switch.set_armed(false)
-	final_switch.activated.connect(_on_switch_activated)
-	add_child(final_switch)
-
-	player = PlayerScene.new()
-	player.position = START_POSITION
-	player.died.connect(_on_player_died)
-	player.rebounded.connect(_on_player_rebounded)
-	player.jumped.connect(func(_point: Vector2) -> void: sfx.play("jump"))
-	add_child(player)
-
-	camera = Camera2D.new()
-	camera.position = Vector2(0, -65)
-	camera.limit_left = 0
-	camera.limit_right = int(WORLD_WIDTH)
-	camera.limit_top = 0
-	camera.limit_bottom = 216
-	camera.position_smoothing_enabled = true
-	camera.position_smoothing_speed = 8.0
-	player.add_child(camera)
-	camera.make_current()
-
-	effects = EffectsScene.new()
-	add_child(effects)
 	sfx = SfxScene.new()
 	add_child(sfx)
+	_create_ui()
+	_show_level_card(0)
 
-func reset_encounter(full_reset: bool = false) -> void:
-	reset_ticket += 1
-	mode = "play"
-	if full_reset:
-		checkpoint_station = 0
-		contact_hits = 0
-		unsafe_pushes = 0
-		rewinds_used = 0
-		deaths_count = 0
-	var restore_station := checkpoint_station
-	circuit_powered = restore_station >= 2
-	safety_enabled = restore_station >= 3
-	final_lock_enabled = false
-	npc_arrived = false
-	carriage.force_station(restore_station)
-	carriage.set_safety_enabled(safety_enabled)
-	carriage.set_final_lock_enabled(false)
-	safety_switch.reset_switch()
-	if safety_enabled:
-		safety_switch.active = true
-	final_switch.reset_switch()
-	final_switch.set_armed(restore_station >= 3)
-	ram.reset_kinetic()
-	var ram_at := RAM_START
-	var player_at := START_POSITION
-	if restore_station == 1:
-		ram_at = Vector2(555, 172)
-		player_at = Vector2(620, 173)
-	elif restore_station >= 3:
-		ram_at = Vector2(1030, 172)
-		player_at = Vector2(1090, 123)
-	ram.position = ram_at
-	ram.spawn_position = ram_at
-	ram.home = ram_at
-	player.reset_at(player_at)
-	camera.reset_smoothing()
-	last_event = "Use the threat. Watch what each position changes next."
-	result_label.text = ""
-	result_label.hide()
+func _physics_process(delta: float) -> void:
+	if mode == "card":
+		if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("attack") or Input.is_action_just_pressed("ui_accept"):
+			_start_level()
+		return
+	if mode == "campaign_complete":
+		if Input.is_action_just_pressed("restart"):
+			level_index = 0
+			total_time = 0.0
+			attempts = 0
+			unsafe_commits = 0
+			result_panel.hide()
+			_show_level_card(0)
+		return
+	if mode != "play":
+		return
+
+	level_start_time += delta
+	wedge_release_grace = maxf(0.0, wedge_release_grace - delta)
+	hint_time = maxf(0.0, hint_time - delta)
+	announcement_time = maxf(0.0, announcement_time - delta)
+	_update_transient_ui()
+
+	if Input.is_action_just_pressed("restart"):
+		attempts += 1
+		_build_level(level_index)
+		return
+	if Input.is_action_just_pressed("hint"):
+		_show_hint(5.0)
+
+	if player.global_position.y > 235.0:
+		player.kill()
+	if fan != null:
+		fan.lift(player, delta)
+	_update_pressure_logic()
+	_update_mastery_power()
+	_update_goal_state()
+	_update_hud()
 	queue_redraw()
 
-func _show_briefing() -> void:
-	briefing_active = true
-	mode = "briefing"
+func _show_level_card(index: int) -> void:
+	level_index = index
+	mode = "card"
+	if is_instance_valid(world_root):
+		world_root.queue_free()
+	card_title.text = LEVEL_TITLES[index]
+	card_body.text = "%s\n\nCAN LOOP\nREAD INTENT  >  GUIDE FORCE  >  USE WORLD REACTION\n\nSPACE / J / GAMEPAD A  —  START" % LEVEL_GOALS[index]
+	card_panel.show()
+	result_panel.hide()
+
+func _start_level() -> void:
+	card_panel.hide()
+	_build_level(level_index)
+
+func _build_level(index: int) -> void:
+	failure_ticket += 1
+	level_index = index
+	card_panel.hide()
+	result_panel.hide()
+	if is_instance_valid(world_root):
+		world_root.free()
+	world_root = Node2D.new()
+	world_root.name = "Level%d" % (index + 1)
+	add_child(world_root)
+	move_child(world_root, 0)
+	blocks.clear()
+	spike_rects.clear()
+	bridge_rect = Rect2()
+	bridge_body = null
+	pressure = null
+	fan = null
+	laser = null
+	strike_switch = null
+	upper_latch = false
+	power_latch = false
+	has_wedge = false
+	wedge_release_grace = 0.0
+	goal_enabled = false
+	level_start_time = 0.0
+	mode = "play"
+
+	match index:
+		0: _build_level_1()
+		1: _build_level_2()
+		2: _build_level_3()
+		3: _build_level_4()
+		4: _build_level_5()
+		5: _build_level_6()
+		6: _build_level_7()
+
+	_create_actors(_player_spawn(index), _ram_spawn(index))
+	_show_hint(5.5)
+	_announce("LEVEL %d\n%s" % [index + 1, LEVEL_TITLES[index].substr(3)], 1.6)
+	_update_hud()
+	queue_redraw()
+
+func _create_actors(player_at: Vector2, ram_at: Vector2) -> void:
+	ram = EnemyScene.new() as Area2D
+	ram.name = "Can"
+	ram.configure_systemic_ram(ram_at, 28.0, 356.0)
+	ram.trigger_range = 145.0
+	ram.charge_impulse = 132.0
+	ram.touched_player.connect(_on_ram_touched_player)
+	ram.kinetic_struck.connect(_on_ram_struck)
+	ram.charge_locked.connect(func(direction: int) -> void:
+		_announce("CAN LOCKED %s\nDODGE — IT WILL NOT TURN" % ("RIGHT" if direction > 0 else "LEFT"), 1.0)
+		sfx.play("telegraph")
+	)
+	world_root.add_child(ram)
+
+	player = PlayerScene.new()
+	player.position = player_at
+	player.died.connect(_on_player_died)
+	player.rebounded.connect(func(at: Vector2) -> void:
+		effects.burst(at, Color("fff1ac"), 9)
+		sfx.play("bounce")
+	)
+	player.jumped.connect(func(_at: Vector2) -> void: sfx.play("jump"))
+	world_root.add_child(player)
+
+	effects = EffectsScene.new()
+	world_root.add_child(effects)
+
+func _build_level_1() -> void:
+	_add_block(Rect2(0, FLOOR_Y, 384, 26))
+	_add_block(Rect2(278, 120, 106, 70))
+	goal_position = Vector2(346, 100)
+
+func _build_level_2() -> void:
+	_add_block(Rect2(0, FLOOR_Y, 384, 26))
+	_add_block(Rect2(298, 88, 86, 12), true)
+	_add_pressure(Vector2(126, 184), "PARK CAN HERE")
+	_add_fan(Vector2(246, 184), 118.0)
+	wedge_position = Vector2(126, 172)
+	has_wedge = true
+	goal_position = Vector2(344, 68)
+
+func _build_level_3() -> void:
+	_add_block(Rect2(0, FLOOR_Y, 384, 26))
+	_add_block(Rect2(296, 86, 88, 12), true)
+	_add_pressure(Vector2(154, 184), "CLAMP + SWITCH")
+	_add_fan(Vector2(264, 184), 122.0)
+	wedge_position = Vector2(154, 172)
+	has_wedge = true
+	goal_position = Vector2(342, 66)
+
+func _build_level_4() -> void:
+	_add_block(Rect2(0, FLOOR_Y, 384, 26))
+	_add_block(Rect2(142, 104, 86, 10), true)
+	_add_block(Rect2(300, 84, 84, 12), true)
+	_add_pressure(Vector2(116, 184), "COMMIT LAST")
+	_add_fan(Vector2(260, 184), 124.0)
+	strike_switch = StrikeSwitchScene.new() as Area2D
+	strike_switch.configure("strike", Vector2(184, 95), "PREP LATCH")
+	strike_switch.activated.connect(func(_kind: String, at: Vector2) -> void:
+		upper_latch = true
+		effects.burst(at, Color("a9f4dd"), 14)
+		sfx.play("switch")
+		_announce("PREP LATCH SET\nNOW COMMIT THE CAN TO THE SWITCH", 2.0)
+	)
+	world_root.add_child(strike_switch)
+	wedge_position = Vector2(116, 172)
+	has_wedge = true
+	goal_position = Vector2(342, 64)
+
+func _build_level_5() -> void:
+	_add_block(Rect2(0, FLOOR_Y, 252, 26))
+	_add_block(Rect2(334, FLOOR_Y, 50, 26))
+	_add_spikes(Rect2(252, FLOOR_Y, 82, 26))
+	_add_laser(Vector2(188, 172), Vector2(306, 172), 2)
+	bridge_rect = Rect2(252, 172, 82, 10)
+	goal_position = Vector2(356, 171)
+
+func _build_level_6() -> void:
+	_add_block(Rect2(0, FLOOR_Y, 384, 26))
+	_add_block(Rect2(130, 102, 92, 10), true)
+	_add_block(Rect2(316, 88, 68, 10), true)
+	_add_pressure(Vector2(84, 184), "FAN SWITCH")
+	_add_fan(Vector2(174, 184), 118.0)
+	_add_laser(Vector2(276, 172), Vector2(276, 70), 1)
+	wedge_position = Vector2(84, 172)
+	has_wedge = true
+	bridge_rect = Rect2(222, 102, 94, 10)
+	goal_position = Vector2(350, 68)
+
+func _build_level_7() -> void:
+	_add_block(Rect2(0, FLOOR_Y, 384, 26))
+	_add_block(Rect2(132, 102, 86, 10), true)
+	_add_block(Rect2(314, 82, 70, 10), true)
+	_add_pressure(Vector2(82, 184), "SYSTEM POWER")
+	_add_fan(Vector2(172, 184), 120.0)
+	strike_switch = StrikeSwitchScene.new() as Area2D
+	strike_switch.configure("strike", Vector2(176, 93), "POWER LATCH")
+	strike_switch.activated.connect(func(_kind: String, at: Vector2) -> void:
+		power_latch = true
+		laser.armed = true
+		effects.burst(at, Color("a9f4dd"), 16)
+		sfx.play("sensor")
+		_announce("SYSTEM POWER LATCHED\nTHE LASER RIG NOW ACCEPTS FORCE", 2.2)
+	)
+	world_root.add_child(strike_switch)
+	_add_laser(Vector2(276, 172), Vector2(276, 66), 1)
+	laser.armed = false
+	wedge_position = Vector2(82, 172)
+	has_wedge = true
+	bridge_rect = Rect2(218, 102, 96, 10)
+	goal_position = Vector2(350, 62)
+
+func _add_pressure(at: Vector2, label: String) -> void:
+	pressure = PressureScene.new()
+	pressure.configure(at, label)
+	pressure.changed.connect(func(active: bool) -> void:
+		sfx.play("fan" if active else "switch")
+		effects.burst(pressure.global_position, Color("a9f4dd") if active else Color("ef9569"), 10)
+		_announce("HEAVY SWITCH %s\nFAN %s" % ["HELD" if active else "RELEASED", "ON" if active else "OFF"], 1.5)
+	)
+	world_root.add_child(pressure)
+
+func _add_fan(at: Vector2, height: float) -> void:
+	fan = FanScene.new()
+	fan.configure(at, height)
+	world_root.add_child(fan)
+
+func _add_laser(at: Vector2, sensor_at: Vector2, start_orientation: int) -> void:
+	laser = LaserScene.new()
+	laser.configure(at, sensor_at, start_orientation)
+	laser.orientation_changed.connect(func(_index: int) -> void:
+		sfx.play("laser")
+		effects.burst(laser.global_position, Color("ef9569"), 12)
+		_announce("CAN FORCE ROTATED THE EMITTER\nWATCH THE BEAM PATH", 1.6)
+	)
+	laser.sensor_changed.connect(func(active: bool) -> void:
+		if active:
+			laser.armed = false
+			_set_bridge(true)
+			sfx.play("sensor")
+			_announce("BEAM REACHED SENSOR\nBRIDGE EXTENDED", 2.0)
+	)
+	laser.impact_rejected.connect(func() -> void:
+		unsafe_commits += 1
+		_announce("LASER RIG HAS NO POWER\nHOLD THE SWITCH, RIDE THE FAN, LATCH POWER", 2.5)
+	)
+	world_root.add_child(laser)
+
+func _update_pressure_logic() -> void:
+	if pressure == null or not has_wedge:
+		return
+	var close := ram.global_position.distance_to(wedge_position) <= 25.0
+	if close and not ram.wedged and wedge_release_grace <= 0.0:
+		if level_index == 3 and not upper_latch:
+			unsafe_commits += 1
+			_fail_reversal("THE CAN IS COMMITTED TOO EARLY\nYOU NEEDED ITS BOUNCE TO SET PREP LATCH FIRST")
+			return
+		ram.wedge_at(wedge_position)
+	if ram.wedged:
+		pressure.set_pressed(true)
+	elif not close:
+		pressure.set_pressed(false)
+	if fan != null:
+		fan.set_active(pressure.pressed)
+
+func _update_mastery_power() -> void:
+	if level_index == 6 and laser != null:
+		laser.armed = power_latch and not laser.sensor_active
+
+func _update_goal_state() -> void:
+	match level_index:
+		0: goal_enabled = true
+		1, 2: goal_enabled = pressure != null and pressure.pressed
+		3: goal_enabled = upper_latch and pressure != null and pressure.pressed
+		4: goal_enabled = laser != null and laser.sensor_active
+		5: goal_enabled = laser != null and laser.sensor_active
+		6: goal_enabled = power_latch and laser != null and laser.sensor_active
+	if goal_enabled and player.global_position.distance_to(goal_position) <= 28.0:
+		_complete_level()
+
+func _complete_level() -> void:
+	if mode != "play":
+		return
+	mode = "transition"
 	player.active = false
 	ram.set_charge_enabled(false)
-	briefing_panel.show()
+	total_time += level_start_time
+	sfx.play("win")
+	effects.burst(goal_position, Color("fff1ac"), 24)
+	_announce("LEVEL %d COMPLETE\nCAN STATE UNDERSTOOD" % (level_index + 1), 1.0)
+	var ticket := failure_ticket
+	await get_tree().create_timer(0.85).timeout
+	if ticket != failure_ticket:
+		return
+	if level_index + 1 < LEVEL_COUNT:
+		_show_level_card(level_index + 1)
+	else:
+		_finish_campaign()
 
-func _begin_play() -> void:
-	briefing_active = false
-	mode = "play"
-	player.active = true
-	ram.set_charge_enabled(true)
-	briefing_panel.hide()
-	last_event = "The engineer cannot move the cart. Trick the ram into moving it."
-	_show_context_hint(5.5)
-	_announce("RESCUE STARTED\nYour position aims the ram.")
+func _finish_campaign() -> void:
+	mode = "campaign_complete"
+	var score := maxi(0, 100 - unsafe_commits * 12 - attempts * 5)
+	var rank := "A" if score >= 90 else "B" if score >= 72 else "C" if score >= 50 else "D"
+	result_label.text = "CAN CAMPAIGN COMPLETE — RANK %s\n7 SHORT SYSTEM LEVELS CLEARED\nPLAN QUALITY %d/100\nRewinds %d   Revealed assumptions %d\nTime %02d:%02d (not scored)\nR  NEW CAMPAIGN" % [rank, score, attempts, unsafe_commits, int(total_time / 60.0), int(total_time) % 60]
+	result_panel.show()
+	hint_back.hide()
+	hint_label.hide()
 
-func _announce(message: String, duration: float = 1.8) -> void:
-	announcement_label.text = message
-	announcement_label.visible = true
-	announcement_time = duration
-	_show_context_hint(maxf(4.5, duration + 1.0))
+func _fail_reversal(message: String) -> void:
+	if mode != "play":
+		return
+	mode = "failure"
+	player.active = false
+	ram.set_charge_enabled(false)
+	_announce(message, 2.2)
+	var ticket := failure_ticket
+	await get_tree().create_timer(1.25).timeout
+	if ticket == failure_ticket:
+		attempts += 1
+		_build_level(level_index)
 
-func _show_context_hint(duration: float = 4.5) -> void:
-	hint_time = duration
-	if hint_label != null:
-		hint_label.show()
-	if hint_back != null:
-		hint_back.show()
+func _on_ram_struck(_player_speed: float, _ram_speed: float) -> void:
+	wedge_release_grace = 0.38
+	if pressure != null and ram.wedged == false:
+		pressure.set_pressed(false)
+
+func _on_ram_touched_player(source: Vector2) -> void:
+	if mode != "play":
+		return
+	player.take_damage(source)
+	if player.health > 0:
+		ram.receive_stun(0.55)
+		_announce("CAN CONTACT HURTS\nATTACK ONLY FROM ABOVE", 1.4)
 
 func _on_player_died() -> void:
 	if mode != "play":
 		return
-	mode = "dead"
-	deaths_count += 1
+	mode = "failure"
 	attempts += 1
-	last_event = "Quick rewind: the last stable cart state is restored."
-	effects.burst(player.global_position, Color("e9876c"), 12)
 	sfx.play("death")
-	var ticket := reset_ticket
+	var ticket := failure_ticket
 	await get_tree().create_timer(0.38).timeout
-	if mode == "dead" and ticket == reset_ticket:
-		reset_encounter(false)
+	if ticket == failure_ticket:
+		_build_level(level_index)
 
-func _on_ram_touched_player(source: Vector2) -> void:
-	if mode == "play":
-		contact_hits += 1
-		player.take_damage(source)
-		if not contact_lesson_seen:
-			contact_lesson_seen = true
-			ram.receive_stun(0.65)
-			last_event = "Body contact hurts. Attack only from above; a successful strike bounces you away."
-			_announce("RAM CONTACT HURTS\nJUMP ABOVE IT + PRESS J/X", 2.4)
-
-func _on_player_rebounded(at: Vector2) -> void:
-	effects.burst(at, Color("f6d68c"), 9)
-	sfx.play("bounce")
-	last_event = "RAM + STRIKE: the threat becomes lift."
-
-func _on_ram_charge_locked(direction: int) -> void:
-	last_event = "RAM LOCKED %s — it will not correct its aim." % ("RIGHT" if direction > 0 else "LEFT")
-	sfx.play("telegraph")
-
-func _on_ram_struck(player_speed: float, ram_speed: float) -> void:
-	last_event = "STRIKE REDIRECT  player %+.0f -> ram %+.0f" % [player_speed, ram_speed]
-	effects.burst(ram.global_position, Color("fff1ac"), 8)
-
-func _on_ram_hit_carriage(ram_speed: float, _cart_speed: float) -> void:
-	last_event = "RAM + CART: committed force advances one readable stop."
-	effects.burst(carriage.global_position, Color("a9f4dd"), 14)
-	sfx.play("hit")
-	shake_time = 0.16
-
-func _on_carriage_struck(_player_speed: float, _cart_speed: float) -> void:
-	last_event = "The cart is too heavy to steer directly—but its roof still returns your bounce."
-
-func _on_cart_station_changed(index: int) -> void:
-	effects.burst(carriage.global_position + Vector2(0, 10), Color("d8b47b"), 10)
-	shake_time = 0.1
-	# Real-time decisions remain readable: every major state transition creates
-	# a short planning window without pausing or changing the rules.
-	ram.receive_stun(1.0)
-	match index:
-		1:
-			checkpoint_station = maxi(checkpoint_station, 1)
-			last_event = "TRANSFER DOCK: the NPC is safe here. Now position the cart as a tool."
-			sfx.play("checkpoint")
-			_announce("SAFE DOCK REACHED\nR now rewinds here.")
-		2:
-			circuit_powered = true
-			last_event = "CART + PLATE: the live rail is off. The cart is now a platform under CUT-OFF."
-			sfx.play("switch")
-			_announce("CART PRESSED POWER PLATE\nLIVE RAIL POWERED DOWN")
-		3:
-			checkpoint_station = 3
-			final_switch.set_armed(true)
-			last_event = "SAFE BAY: the lock behind you is armed. Bring the ram back into it."
-			sfx.play("checkpoint")
-			_announce("SAFE BAY REACHED\nRAM LOCK IS NOW ARMED")
-		4:
-			npc_arrived = true
-			last_event = "NPC DELIVERED: the station gate is open."
-			sfx.play("win")
-			_announce("ENGINEER DELIVERED\nMEET THEM AT THE GREEN STATION", 2.4)
+func _set_bridge(active: bool) -> void:
+	if not active or bridge_rect.size == Vector2.ZERO or is_instance_valid(bridge_body):
+		return
+	bridge_body = _add_block(bridge_rect, true)
+	goal_enabled = true
 	queue_redraw()
 
-func _on_cart_push_rejected(index: int) -> void:
-	unsafe_pushes += 1
-	ram.receive_stun(0.45)
-	shake_time = 0.2
-	if index == 3 and not safety_enabled:
-		last_event = "DANGER BAY LIVE: pushing right now endangers the NPC. Reach CUT-OFF first."
-	elif index == 4 and not final_lock_enabled:
-		last_event = "FINAL TRACK LOCKED: use your position to drive the ram into RAM LOCK."
-	else:
-		last_event = "The cart is already at the rail stop."
-	sfx.play("alarm")
-	effects.burst(carriage.global_position, Color("ef9569"), 16)
-	if index == 3 and not safety_enabled:
-		_announce("UNSAFE MOVE BLOCKED\nCUT-OFF ABOVE CONTROLS THIS BAY", 2.6)
-	elif index == 4 and not final_lock_enabled:
-		_announce("FINAL TRACK LOCKED\nBAIT RAM INTO THE RED LOCK", 2.4)
-
-func _on_npc_reacted(mood: String) -> void:
-	if mood == "ready":
-		last_event = "The passenger is ready. The ram is now on the useful left side."
-
-func _on_switch_activated(kind: String, at: Vector2) -> void:
-	effects.burst(at, Color("a9f4dd"), 16)
-	sfx.play("switch")
-	shake_time = 0.12
-	if kind == "strike":
-		safety_enabled = true
-		carriage.set_safety_enabled(true)
-		last_event = "CUT-OFF ACTIVE: the danger bay is safe. Future cart movement is now useful."
-		_announce("CUT-OFF ACTIVATED\nDANGER BAY CHANGED RED → GREEN", 2.4)
-	else:
-		final_lock_enabled = true
-		carriage.set_final_lock_enabled(true)
-		last_event = "RAM LOCK ACTIVE: move right of the cart and drive it home."
-		_announce("RAM LOCK ACTIVATED\nRAM RETURNED TO THE USEFUL SIDE", 2.4)
-
-func _complete_level() -> void:
-	mode = "complete"
-	player.active = false
-	player.velocity = Vector2.ZERO
-	ram.set_charge_enabled(false)
-	announcement_time = 0.0
-	announcement_label.hide()
-	var score := maxi(0, 100 - unsafe_pushes * 18 - contact_hits * 8 - deaths_count * 12 - rewinds_used * 6)
-	var rank := "A" if score >= 90 else "B" if score >= 72 else "C" if score >= 50 else "D"
-	result_label.text = "SYSTEM LINK COMPLETE — RANK %s\nENGINEER RESCUED\nPLAN QUALITY %d/100\nUnsafe %d   Hits %d   Rewinds %d\nR  NEW RUN" % [rank, score, unsafe_pushes, contact_hits, rewinds_used]
-	result_label.show()
-	effects.burst(GOAL_POSITION, Color("fff1ac"), 28)
-	sfx.play("win")
-
-func _add_block(rect: Rect2, one_way: bool = false) -> void:
+func _add_block(rect: Rect2, one_way: bool = false) -> StaticBody2D:
 	blocks.append(rect)
 	var body := StaticBody2D.new()
 	body.position = rect.get_center()
@@ -382,121 +444,142 @@ func _add_block(rect: Rect2, one_way: bool = false) -> void:
 	if one_way:
 		collision.one_way_collision_margin = 3.0
 	body.add_child(collision)
-	add_child(body)
+	world_root.add_child(body)
+	return body
 
 func _add_spikes(rect: Rect2) -> void:
 	spike_rects.append(rect)
 	var area := Area2D.new()
-	area.position = rect.get_center() + Vector2(0, -4)
+	area.position = rect.get_center()
 	area.collision_layer = 0
 	area.collision_mask = 2
 	area.monitoring = true
 	var collision := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()
-	shape.size = rect.size + Vector2(0, 8)
+	shape.size = rect.size
 	collision.shape = shape
 	area.add_child(collision)
 	area.body_entered.connect(func(body: Node2D) -> void:
 		if body.is_in_group("player") and mode == "play":
 			player.kill()
 	)
-	add_child(area)
+	world_root.add_child(area)
 
-func _add_electric_hazard() -> void:
-	var area := Area2D.new()
-	area.position = ELECTRIC_RECT.get_center()
-	area.collision_layer = 0
-	area.collision_mask = 2
-	area.monitoring = true
-	var collision := CollisionShape2D.new()
-	var shape := RectangleShape2D.new()
-	shape.size = ELECTRIC_RECT.size
-	collision.shape = shape
-	area.add_child(collision)
-	area.body_entered.connect(func(body: Node2D) -> void:
-		if not circuit_powered and body.is_in_group("player") and mode == "play":
-			player.kill()
-	)
-	add_child(area)
+func _player_spawn(index: int) -> Vector2:
+	return [Vector2(42, 181), Vector2(42, 181), Vector2(42, 181), Vector2(42, 181), Vector2(42, 181), Vector2(42, 181), Vector2(42, 181)][index]
+
+func _ram_spawn(index: int) -> Vector2:
+	return [Vector2(118, 180), Vector2(82, 180), Vector2(86, 180), Vector2(88, 180), Vector2(96, 180), Vector2(150, 180), Vector2(150, 180)][index]
 
 func _create_ui() -> void:
 	var canvas := CanvasLayer.new()
 	canvas.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(canvas)
-	var objective_back := ColorRect.new()
-	objective_back.position = Vector2.ZERO
-	objective_back.size = Vector2(384, 42)
-	objective_back.color = Color(0.035, 0.075, 0.1, 0.94)
-	objective_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	canvas.add_child(objective_back)
-	objective_label = _label(Vector2(8, 4), Vector2(368, 35), 9, Color("f5dfa8"))
-	canvas.add_child(objective_label)
+	var top_back := ColorRect.new()
+	top_back.size = Vector2(384, 36)
+	top_back.color = Color(0.025, 0.06, 0.08, 0.96)
+	top_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(top_back)
+	top_label = _label(Vector2(7, 3), Vector2(370, 30), 8, Color("f5dfa8"))
+	canvas.add_child(top_label)
 	hint_back = ColorRect.new()
-	hint_back.position = Vector2(7, 158)
-	hint_back.size = Vector2(370, 34)
-	hint_back.color = Color(0.035, 0.075, 0.1, 0.90)
+	hint_back.position = Vector2(7, 160)
+	hint_back.size = Vector2(370, 31)
+	hint_back.color = Color(0.025, 0.06, 0.08, 0.92)
 	hint_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint_back.visible = false
 	canvas.add_child(hint_back)
-	hint_label = _label(Vector2(12, 161), Vector2(360, 28), 9, Color("d7e5d5"))
+	hint_label = _label(Vector2(11, 162), Vector2(362, 27), 8, Color("d7e5d5"))
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hint_label.visible = false
 	canvas.add_child(hint_label)
-	var help_back := ColorRect.new()
-	help_back.position = Vector2(0, 195)
-	help_back.size = Vector2(384, 21)
-	help_back.color = Color(0.025, 0.055, 0.075, 0.96)
-	help_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	canvas.add_child(help_back)
-	help_label = _label(Vector2(7, 199), Vector2(370, 14), 8, Color("b6c4bf"))
-	help_label.text = "A/D MOVE   SPACE JUMP   J/X STRIKE   H HINT   R REWIND"
-	canvas.add_child(help_label)
-	announcement_label = _label(Vector2(62, 50), Vector2(260, 38), 10, Color("fff1ac"))
+	var controls := _label(Vector2(6, 199), Vector2(372, 12), 7, Color("b6c4bf"))
+	controls.text = "A/D MOVE   SPACE JUMP   J/X AIR STRIKE   H HINT   R RESET"
+	canvas.add_child(controls)
+	announcement_label = _label(Vector2(63, 45), Vector2(258, 38), 9, Color("fff1ac"))
 	announcement_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	announcement_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	announcement_label.add_theme_stylebox_override("normal", _panel_style(Color(0.04, 0.09, 0.12, 0.96), Color("a9f4dd")))
-	announcement_label.visible = false
+	announcement_label.add_theme_stylebox_override("normal", _panel_style(Color(0.03, 0.07, 0.09, 0.97), Color("a9f4dd")))
 	canvas.add_child(announcement_label)
-	result_label = _label(Vector2(47, 48), Vector2(290, 106), 10, Color("fff1ac"))
+	announcement_label.hide()
+
+	card_panel = ColorRect.new()
+	card_panel.size = Vector2(384, 216)
+	card_panel.color = Color(0.025, 0.06, 0.08, 1.0)
+	canvas.add_child(card_panel)
+	card_title = _label(Vector2(25, 33), Vector2(334, 28), 16, Color("fff1ac"))
+	card_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card_panel.add_child(card_title)
+	card_body = _label(Vector2(34, 72), Vector2(316, 118), 9, Color("d7e5d5"))
+	card_body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card_body.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	card_panel.add_child(card_body)
+
+	result_panel = ColorRect.new()
+	result_panel.position = Vector2(35, 35)
+	result_panel.size = Vector2(314, 146)
+	result_panel.color = Color(0.025, 0.06, 0.08, 0.99)
+	canvas.add_child(result_panel)
+	result_label = _label(Vector2(8, 8), Vector2(298, 130), 9, Color("fff1ac"))
 	result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	result_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	result_label.add_theme_stylebox_override("normal", _panel_style(Color(0.025, 0.06, 0.08, 0.98), Color("fff1ac")))
-	result_label.visible = false
-	canvas.add_child(result_label)
+	result_panel.add_child(result_label)
+	result_panel.hide()
 
-	briefing_panel = ColorRect.new()
-	briefing_panel.position = Vector2.ZERO
-	briefing_panel.size = Vector2(384, 216)
-	briefing_panel.color = Color(0.025, 0.06, 0.08, 1.0)
-	briefing_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	canvas.add_child(briefing_panel)
-	var brief_title := _label(Vector2(24, 21), Vector2(336, 30), 18, Color("fff1ac"))
-	brief_title.text = "RESCUE THE ENGINEER"
-	brief_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	briefing_panel.add_child(brief_title)
-	var brief_goal := _label(Vector2(34, 57), Vector2(316, 42), 10, Color("d7e5d5"))
-	brief_goal.text = "Their rail cart is stranded.\nDeliver it to the GREEN STATION on the right."
-	brief_goal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	brief_goal.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	briefing_panel.add_child(brief_goal)
-	var chain := _label(Vector2(26, 108), Vector2(332, 24), 11, Color("a9f4dd"))
-	chain.text = "YOU AIM RAM  >  RAM PUSHES CART  >  RESCUE"
-	chain.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	briefing_panel.add_child(chain)
-	var brief_rule := _label(Vector2(35, 132), Vector2(314, 38), 9, Color("efb97b"))
-	brief_rule.text = "You cannot push the heavy cart yourself.\nYour POSITION controls where the ram charges.\nStay outside its notice range whenever you need to think."
-	brief_rule.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	briefing_panel.add_child(brief_rule)
-	var begin := _label(Vector2(75, 181), Vector2(234, 18), 10, Color("fff1ac"))
-	begin.text = "SPACE / J / GAMEPAD A  —  BEGIN"
-	begin.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	briefing_panel.add_child(begin)
+func _update_hud() -> void:
+	if top_label == null or player == null or ram == null:
+		return
+	var systems := ""
+	if pressure != null:
+		systems += "  SWITCH %s" % ("HELD" if pressure.pressed else "OPEN")
+	if fan != null:
+		systems += "  FAN %s" % ("ON" if fan.active else "OFF")
+	if laser != null:
+		systems += "  LASER %d  SENSOR %s" % [laser.orientation_index + 1, "ON" if laser.sensor_active else "OFF"]
+	top_label.text = "%s   HP %d/3\nCAN %s%s" % [LEVEL_TITLES[level_index], player.health, _ram_readout(), systems]
 
-func _label(at: Vector2, dimensions: Vector2, font_size: int, color: Color) -> Label:
+func _ram_readout() -> String:
+	if ram.wedged:
+		return "WEDGED"
+	var arrow := ">" if ram.facing > 0 else "<"
+	match ram.state:
+		"windup": return "LOCK%s" % arrow
+		"coast": return "CHARGE%s" % arrow
+		"stunned": return "STUNNED"
+	return "READY"
+
+func _current_hint() -> String:
+	match level_index:
+		0: return "RED ARROW = LOCKED CHARGE. JUMP ABOVE + J/X TO BOUNCE ONTO EXIT LEDGE."
+		1: return "STAND BEYOND THE GOLD PLATE. BAIT CAN ONTO IT; HELD WEIGHT KEEPS FAN ON."
+		2: return "A MOVING CAN IS DANGER. A WEDGED CAN IS A STABLE WEIGHT AND BOUNCE POINT."
+		3:
+			return "PREP LATCH FIRST: USE THE ROAMING CAN TO REACH IT. COMMIT TO SWITCH LAST." if not upper_latch else "PREP IS SET. NOW WEDGE CAN ON COMMIT LAST AND RIDE THE FAN."
+		4: return "CAN IMPACT ROTATES THE EMITTER. PREDICT WHICH ANGLE REACHES SENSOR."
+		5: return "FAN AND LASER ARE BOTH VALID FIRST MOVES. PRESERVE A ROUTE TO THE OTHER."
+		6:
+			return "SYSTEM POWER MUST BE LATCHED ABOVE BEFORE LASER FORCE MATTERS." if not power_latch else "POWER LATCHED. RELEASE CAN, ROTATE LASER, CROSS SENSOR BRIDGE."
+	return "GUIDE CAN → TRIGGER WORLD → USE RESULT"
+
+func _show_hint(duration: float = 4.5) -> void:
+	hint_time = duration
+	hint_label.text = _current_hint()
+	hint_label.show()
+	hint_back.show()
+
+func _announce(message: String, duration: float = 1.6) -> void:
+	announcement_label.text = message
+	announcement_label.show()
+	announcement_time = duration
+
+func _update_transient_ui() -> void:
+	announcement_label.visible = announcement_time > 0.0
+	hint_label.visible = hint_time > 0.0
+	hint_back.visible = hint_time > 0.0
+
+func _label(at: Vector2, size: Vector2, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.position = at
-	label.size = dimensions
+	label.size = size
 	PixelUI.style_label(label, ui_font, font_size, color)
 	return label
 
@@ -505,114 +588,29 @@ func _panel_style(fill: Color, border: Color) -> StyleBoxFlat:
 	style.bg_color = fill
 	style.border_color = border
 	style.set_border_width_all(1)
-	style.corner_radius_top_left = 2
-	style.corner_radius_top_right = 2
-	style.corner_radius_bottom_left = 2
-	style.corner_radius_bottom_right = 2
 	return style
 
-func _update_ui() -> void:
-	if objective_label == null:
-		return
-	objective_label.text = "MISSION: DELIVER ENGINEER TO GREEN STATION   HP %d/3\nCART %d/5  RAM %s  RAIL %s  BAY %s  GATE %s" % [
-		player.health,
-		carriage.station_index + 1,
-		_ram_readout(),
-		"OFF" if circuit_powered else "LIVE",
-		"SAFE" if safety_enabled else "DANGER",
-		"OPEN" if final_lock_enabled else "LOCKED",
-	]
-	if hint_label != null:
-		hint_label.text = _current_hint()
-		hint_label.visible = hint_time > 0.0 and mode != "complete"
-	if hint_back != null:
-		hint_back.visible = hint_time > 0.0 and mode != "complete"
-
-func _current_hint() -> String:
-	if npc_arrived:
-		return "ENGINEER DELIVERED — WALK TO THE GREEN STATION DOOR"
-	match carriage.station_index:
-		0:
-			if player.global_position.x < 300.0:
-				return "RED ARROW = RAM DIRECTION LOCKED\nJUMP ABOVE RAM + J/X = HIGH BOUNCE"
-			return "STAND BEYOND THE CART → WAIT FOR RED ARROW → DODGE THE CHARGE"
-		1:
-			return "SAFE CHECKPOINT — BAIT ANOTHER RIGHT CHARGE ONTO THE GOLD POWER PLATE"
-		2:
-			if not safety_enabled:
-				return "RED BAY UNSAFE — CUT-OFF ABOVE CONTROLS IT\nHOW CAN CART POSITION + RAM BOUNCE CREATE HEIGHT?"
-			return "DANGER BAY IS GREEN/SAFE — BAIT ONE RIGHTWARD CART PUSH"
-		3:
-			if not final_lock_enabled:
-				return "GATE LOCKED — RED LOCK ACCEPTS RAM IMPACTS\nPLAN WHERE ITS REBOUND MUST LEAVE THE RAM"
-			return "RAM IS LEFT OF CART — WHERE SHOULD YOU STAND TO MAKE IT PUSH RIGHT?"
-	return "FOLLOW THE ENGINEER'S CART TO THE GREEN STATION"
-
-func _ram_readout() -> String:
-	var arrow := ">" if ram.facing > 0 else "<"
-	match ram.state:
-		"windup": return "LOCK%s" % arrow
-		"coast": return "CHARGE%s" % arrow
-		"stunned": return "STUNNED"
-	var difference := ram.global_position.x - player.global_position.x
-	if difference < -185.0:
-		return "LEFT"
-	if difference > 185.0:
-		return "RIGHT"
-	return "NEAR"
-
-func _update_camera_shake(delta: float) -> void:
-	shake_time = maxf(0.0, shake_time - delta)
-	if shake_time > 0.0:
-		camera.offset = Vector2(randf_range(-2.0, 2.0), randf_range(-1.0, 1.0))
-	else:
-		camera.offset = Vector2.ZERO
-
 func _draw() -> void:
-	draw_rect(Rect2(0, 0, WORLD_WIDTH, 216), Color("0d1822"))
-	for section in [Rect2(0, 42, 370, 174), Rect2(370, 42, 460, 174), Rect2(830, 42, 420, 174), Rect2(1250, 42, 510, 174)]:
-		draw_rect(section, Color("172936") if int(section.position.x / 400.0) % 2 == 0 else Color("142431"))
-	for x in range(40, int(WORLD_WIDTH), 180):
-		draw_line(Vector2(x, 50), Vector2(x, 182), Color("263d48"), 4.0)
-		draw_circle(Vector2(x, 72), 18.0, Color("203541"))
+	draw_rect(Rect2(0, 0, 384, 216), Color("0d1822"))
+	for x in range(24, 384, 72):
+		draw_line(Vector2(x, 38), Vector2(x, FLOOR_Y), Color("203541"), 3.0)
+		draw_circle(Vector2(x, 58), 12.0, Color("1a303c"))
 	for rect in blocks:
 		draw_rect(rect, Color("283b47"))
-		draw_rect(Rect2(rect.position, Vector2(rect.size.x, 4)), Color("c3935f"))
+		draw_rect(Rect2(rect.position, Vector2(rect.size.x, 3)), Color("c3935f"))
 	for rect in spike_rects:
 		for x in range(int(rect.position.x), int(rect.end.x), 8):
 			draw_colored_polygon(PackedVector2Array([Vector2(x, rect.position.y + 8), Vector2(x + 4, rect.position.y), Vector2(x + 8, rect.position.y + 8)]), Color("ef9569"))
-	draw_line(Vector2(CART_STATIONS[0] - 45, 180), Vector2(CART_STATIONS[-1] + 45, 180), Color("657b83"), 2.0)
-	var stop_names := ["START", "SAFE", "POWER", "BAY", "STATION"]
-	for i in CART_STATIONS.size():
-		var color := Color("a9f4dd") if carriage != null and carriage.station_index >= i else Color("657b83")
-		draw_rect(Rect2(CART_STATIONS[i] - 3, 174, 6, 8), color)
-		draw_string(ui_font, Vector2(CART_STATIONS[i] - 28, 156), "%d %s" % [i + 1, stop_names[i]], HORIZONTAL_ALIGNMENT_CENTER, 56, 7, color)
-	# Visible wiring shows why this cart stop changes the live rail.
-	var circuit_color := Color("a9f4dd") if circuit_powered else Color("d7b06f")
-	draw_rect(Rect2(CART_STATIONS[2] - 38, 177, 76, 5), circuit_color)
-	draw_line(Vector2(CART_STATIONS[2], 177), Vector2(ELECTRIC_RECT.get_center().x, 177), circuit_color, 2.0)
-	draw_circle(Vector2(CART_STATIONS[2], 177), 4.0, circuit_color)
-	if carriage != null and carriage.station_index < 2:
-		draw_string(ui_font, Vector2(CART_STATIONS[2] - 37, 145), "CART POWER PLATE", HORIZONTAL_ALIGNMENT_CENTER, 74, 7, circuit_color)
-	var electric_color := Color("304551") if circuit_powered else Color("75d6d2")
-	draw_rect(ELECTRIC_RECT, Color("20303b"))
-	for x in range(int(ELECTRIC_RECT.position.x), int(ELECTRIC_RECT.end.x), 7):
-		draw_line(Vector2(x, ELECTRIC_RECT.position.y), Vector2(x + 4, ELECTRIC_RECT.end.y), electric_color, 2.0)
-	var bay_color := Color("587b72") if safety_enabled else Color("b84f4f")
-	draw_rect(Rect2(1110, 116, 100, 8), bay_color)
-	draw_line(Vector2(1120, 124), Vector2(1140, 157), bay_color, 4.0)
-	draw_line(Vector2(1200, 124), Vector2(1180, 157), bay_color, 4.0)
-	draw_string(ui_font, Vector2(1112, 108), "ENGINEER DANGER BAY", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, bay_color)
-	var gate_color := Color("a9f4dd") if final_lock_enabled else Color("ef9569")
-	draw_rect(Rect2(1440, 112, 6, 70), gate_color)
-	draw_string(ui_font, Vector2(1028, 76), "HIT WITH RAM", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, gate_color)
-	draw_rect(Rect2(GOAL_POSITION.x - 13, GOAL_POSITION.y - 36, 26, 38), Color("a47b55"))
-	draw_rect(Rect2(GOAL_POSITION.x - 9, GOAL_POSITION.y - 31, 18, 25), Color("a9f4dd") if npc_arrived else Color("304551"))
-	draw_string(ui_font, Vector2(1528, 101), "GREEN STATION — DELIVER ENGINEER", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("a9f4dd"))
-	if carriage != null and carriage.npc_mood == "alarm":
-		draw_string(ui_font, carriage.position + Vector2(-76, -42), "ENGINEER: STOP! CUT-OFF FIRST!", HORIZONTAL_ALIGNMENT_CENTER, 152, 8, Color("fff1ac"))
-	draw_string(ui_font, Vector2(38, 76), "RAM = DANGER + YOUR ONLY TOOL", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("9ac6c7"))
-	draw_string(ui_font, Vector2(405, 76), "ENGINEER'S CART — RAM IMPACTS ONLY", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color("9ac6c7"))
+	if has_wedge:
+		draw_line(wedge_position + Vector2(-25, -17), wedge_position + Vector2(-15, 10), Color("a9f4dd"), 4.0)
+		draw_line(wedge_position + Vector2(25, -17), wedge_position + Vector2(15, 10), Color("a9f4dd"), 4.0)
+	if goal_position != Vector2.ZERO:
+		var goal_color := Color("a9f4dd") if goal_enabled else Color("657b83")
+		draw_rect(Rect2(goal_position - Vector2(11, 24), Vector2(22, 28)), Color("162230"))
+		draw_rect(Rect2(goal_position - Vector2(8, 21), Vector2(16, 22)), goal_color)
+		draw_string(ui_font, goal_position + Vector2(-22, -30), "EXIT", HORIZONTAL_ALIGNMENT_CENTER, 44, 7, goal_color)
+	if mode == "play" and level_index == 3 and not upper_latch:
+		draw_string(ui_font, Vector2(130, 70), "USE CAN HERE BEFORE SWITCH", HORIZONTAL_ALIGNMENT_CENTER, 120, 7, Color("fff1ac"))
 
 func _setup_inputs() -> void:
 	_add_action("move_left", 0.2)
