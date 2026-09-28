@@ -6,6 +6,21 @@ revisions because the repository may be moved or forked.
 
 ## Unreleased
 
+- Began the second Foundry redesign around bait, rebound, committed impact and
+  immediate consequences; preserved the first redesign as a runnable legacy
+  scene instead of retaining its escort route in the new launch experience.
+- Replaced the ten-area escort with four screen-sized maintenance bays, three
+  local Cart positions, telescoping weight bridges, and no levers or gates.
+- Normal Can stomps now stagger for 0.38 seconds, descending contact rebounds
+  automatically, and a stomp during a charge preserves its committed motion.
+  Crusher and hard impacts instead create a safe, solid, heavy grounded shell.
+- Retuned charge anticipation, speed, air control, roof launch, Cart travel,
+  hit pause, particles, shake, and distinct charge/grounding sounds for a fast
+  bait–bounce–impact loop. Cart placement can also shield Can from the press.
+- Kept valid upper bypasses of the final weak partition; the final exit still
+  requires physical bridge support from Cart or grounded Can. Added shallow
+  recovery steps, 3.4-second environmental weight, fast local rewinds, and full
+  hazard/actor snapshot restoration to make alternative plans forgiving.
 - Replaced the launch experience with **Foundry / Future States**, a connected
   inspection, freight, service-return, delivery, and evacuation route centered
   on one persistent Can and engineer transport. Earlier prototype scenes remain

@@ -1,0 +1,77 @@
+{
+	"cart_impacts": 2,
+	"charges": 4,
+	"completion_seconds": 15.97,
+	"deaths": 0,
+	"environmental_stuns": 1,
+	"idle_seconds": 2.08,
+	"rebounds": 4,
+	"resets": 0,
+	"reversals": 0,
+	"rooms": [
+		{
+			"bridge": false,
+			"broken": true,
+			"cart": 0,
+			"room": "SPARKS",
+			"stats": {
+				"cart_impacts": 0,
+				"charges": 1,
+				"deaths": 0,
+				"environmental_stuns": 0,
+				"rebounds": 0,
+				"resets": 0,
+				"reversals": 0
+			},
+			"time": 2.51666666666666
+		},
+		{
+			"bridge": false,
+			"broken": false,
+			"cart": 0,
+			"room": "CROSSROADS",
+			"stats": {
+				"cart_impacts": 0,
+				"charges": 1,
+				"deaths": 0,
+				"environmental_stuns": 0,
+				"rebounds": 1,
+				"resets": 0,
+				"reversals": 0
+			},
+			"time": 5.56666666666665
+		},
+		{
+			"bridge": false,
+			"broken": false,
+			"cart": 2,
+			"room": "THE PRESS",
+			"stats": {
+				"cart_impacts": 2,
+				"charges": 3,
+				"deaths": 0,
+				"environmental_stuns": 0,
+				"rebounds": 2,
+				"resets": 0,
+				"reversals": 0
+			},
+			"time": 9.53333333333339
+		},
+		{
+			"bridge": true,
+			"broken": false,
+			"cart": 2,
+			"room": "FREEFORM",
+			"stats": {
+				"cart_impacts": 2,
+				"charges": 4,
+				"deaths": 0,
+				"environmental_stuns": 1,
+				"rebounds": 4,
+				"resets": 0,
+				"reversals": 0
+			},
+			"time": 15.966666666667
+		}
+	]
+}

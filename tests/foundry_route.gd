@@ -13,7 +13,7 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	level = (load("res://scenes/foundry.tscn") as PackedScene).instantiate()
+	level = (load("res://scenes/foundry_legacy.tscn") as PackedScene).instantiate()
 	root.add_child(level)
 	await _step()
 	level.player.rebounded.connect(func(_at: Vector2) -> void: rebound_count += 1)

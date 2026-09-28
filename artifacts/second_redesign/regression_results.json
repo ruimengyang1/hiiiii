@@ -1,0 +1,149 @@
+{
+  "regressions": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "second_core",
+        "chunk_id": "c1f84c",
+        "wall_time_seconds": 1.8236424169999998,
+        "exit_code": 0,
+        "original_token_count": 70,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nCORE TUNING: anticipation=0.55s speed=230 bounce=-305 stagger=0.38s impact recovery=0.20s Cart step=80px/0.40s\nSECOND CORE PASS: objective-free bait / commitment / continued rebound / impact / fast reuse\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "second_systems",
+        "chunk_id": "a2fa16",
+        "wall_time_seconds": 2.5613483329999998,
+        "exit_code": 0,
+        "original_token_count": 59,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSECOND SYSTEM CHECKS: 20\nSECOND SYSTEM PASS: E–J, actual bidirectional impacts, visible multi-role positions, shared hazard, weight, force, complete recovery\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "smoke",
+        "chunk_id": "271c23",
+        "wall_time_seconds": 4.4941305,
+        "exit_code": 0,
+        "original_token_count": 34,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSMOKE PASS: level select, unlock save, both stages, and replay\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "route",
+        "chunk_id": "d805c2",
+        "wall_time_seconds": 2.095976833,
+        "exit_code": 0,
+        "original_token_count": 36,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nROUTE PASS: all three rebound climbs work with the starting abilities\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "interactions",
+        "chunk_id": "037f32",
+        "wall_time_seconds": 4.035102833,
+        "exit_code": 0,
+        "original_token_count": 43,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nINTERACTIONS PASS: enemy damage, defeat, spikes, respawn, moving platform, crusher top and spikes\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "rebound",
+        "chunk_id": "964665",
+        "wall_time_seconds": 0.279883042,
+        "exit_code": 0,
+        "original_token_count": 41,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nREBOUND PASS: immediate hit keeps its launch speed; ordinary jumps retain variable height\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "dash",
+        "chunk_id": "e304dd",
+        "wall_time_seconds": 0.533526583,
+        "exit_code": 0,
+        "original_token_count": 36,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nDASH PASS: nearest target, momentum, recharge, and three enemy chains\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "kinetic",
+        "chunk_id": "9e7279",
+        "wall_time_seconds": 0.341368417,
+        "exit_code": 0,
+        "original_token_count": 41,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSYSTEMIC PASS: committed ram, deterministic cart, safety gates, switches, NPC, and rewind\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "kinetic_route",
+        "chunk_id": "2bdf5c",
+        "wall_time_seconds": 0.573526625,
+        "exit_code": 0,
+        "original_token_count": 42,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nSYSTEMIC ROUTE PASS: bounce, cart circuit, heuristic break, cut-off, ram lock, NPC delivery\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "foundry_depth",
+        "chunk_id": "32f005",
+        "wall_time_seconds": 0.843458916,
+        "exit_code": 0,
+        "original_token_count": 48,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nFOUNDRY DEPTH PASS: intent, force, roof cost, weight loss, two solutions, reversal, shared crusher, snapshot, pause\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "foundry_rules",
+        "chunk_id": "1ad577",
+        "wall_time_seconds": 1.205374959,
+        "exit_code": 0,
+        "original_token_count": 56,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nFOUNDRY RULES PASS: general force, persistent fracture, dexterity limits, roof prerequisite, early knowledge shortcut, safe gate, R and death recovery\n"
+      }
+    }
+  ],
+  "legacy_routes": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "foundry_route",
+        "chunk_id": "120834",
+        "wall_time_seconds": 7.208103875,
+        "exit_code": 0,
+        "original_token_count": 531,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nROUTE BEAT react P (387.8941, 197.2993) / Can (354.7335, 290.0) stunned / Cart (720.0, 284.0) 0->0 / mode play / frame 203\nROUTE BEAT knowledge transfer P (1118.924, 252.0314) / Can (1115.0, 290.0) recover / Cart (968.0, 284.0) 1->2 / mode play / frame 1641\nROUTE PROGRESS P (1464.304, 290.9253) / Can (1239.569, 290.0) charging / Cart (968.0, 284.0) 1->2 / mode play / frame 1800\nROUTE BEAT world affects Can P (1587.1, 200.2993) / Can (1480.207, 290.0) stunned / Cart (970.0, 284.0) 1->2 / mode play / frame 2133\nROUTE BEAT preserve roof before transport P (1775.084, 186.2992) / Can (1645.912, 290.0) stunned / Cart (1780.0, 284.0) 2->2 / mode play / frame 3121\nROUTE PROGRESS P (1951.925, 271.2161) / Can (1775.118, 290.0) charging / Cart (1990.0, 284.0) 3->3 / mode play / frame 3600\nROUTE BEAT preserve weight then latch route P (2214.068, 290.9973) / Can (2001.853, 290.0) charging / Cart (2300.0, 284.0) 4->4 / mode play / frame 3817\nROUTE PROGRESS P (124.6423, 290.9253) / Can (1489.203, 290.0) stunned / Cart (2638.0, 284.0) 4->5 / mode play / frame 5400\nROUTE PROGRESS P (124.6423, 290.9253) / Can (348.3183, 290.0) charging / Cart (2638.0, 284.0) 4->5 / mode play / frame 7200\nROUTE BEAT return with knowledge P (57.93066, 270.0077) / Can (123.0667, 290.0) recover / Cart (2640.0, 284.0) 4->5 / mode play / frame 7317\nROUTE PROGRESS P (2932.774, 290.9253) / Can (1399.546, 290.0) idle / Cart (2810.0, 284.0) 5->5 / mode play / frame 9000\nROUTE PROGRESS P (2916.343, 253.841) / Can (2782.451, 290.0) windup / Cart (2950.0, 284.0) 6->6 / mode play / frame 10800\nROUTE BEAT mastery: durable route P (3170.586, 290.9973) / Can (2940.852, 290.0) windup / Cart (3230.0, 284.0) 7->7 / mode play / frame 11006\nROUTE STATES: react | knowledge transfer | world affects Can | preserve roof before transport | preserve weight then latch route | return with knowledge | mastery: durable route\nROUTE TIME: 190.0 simulated seconds; 7 impacts; 3 stomps\nFOUNDRY FRESH ROUTE PASS: real player inputs, every beat, one persistent Can/Cart, full completion\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "foundry_route -- --weight",
+        "chunk_id": "1f1b64",
+        "wall_time_seconds": 7.503419125,
+        "exit_code": 0,
+        "original_token_count": 532,
+        "output": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nROUTE BEAT react P (387.8941, 197.2993) / Can (354.7335, 290.0) stunned / Cart (720.0, 284.0) 0->0 / mode play / frame 203\nROUTE BEAT knowledge transfer P (1118.924, 252.0314) / Can (1115.0, 290.0) recover / Cart (968.0, 284.0) 1->2 / mode play / frame 1641\nROUTE PROGRESS P (1464.304, 290.9253) / Can (1239.569, 290.0) charging / Cart (968.0, 284.0) 1->2 / mode play / frame 1800\nROUTE BEAT world affects Can P (1587.1, 200.2993) / Can (1480.207, 290.0) stunned / Cart (970.0, 284.0) 1->2 / mode play / frame 2133\nROUTE BEAT preserve roof before transport P (1775.084, 186.2992) / Can (1645.912, 290.0) stunned / Cart (1780.0, 284.0) 2->2 / mode play / frame 3121\nROUTE PROGRESS P (1951.925, 271.2161) / Can (1775.118, 290.0) charging / Cart (1990.0, 284.0) 3->3 / mode play / frame 3600\nROUTE BEAT preserve weight then latch route P (2214.068, 290.9973) / Can (2001.853, 290.0) charging / Cart (2300.0, 284.0) 4->4 / mode play / frame 3817\nROUTE PROGRESS P (124.6423, 290.9253) / Can (1489.203, 290.0) stunned / Cart (2638.0, 284.0) 4->5 / mode play / frame 5400\nROUTE PROGRESS P (124.6423, 290.9253) / Can (348.3183, 290.0) charging / Cart (2638.0, 284.0) 4->5 / mode play / frame 7200\nROUTE BEAT return with knowledge P (57.93066, 270.0077) / Can (123.0667, 290.0) recover / Cart (2640.0, 284.0) 4->5 / mode play / frame 7317\nROUTE PROGRESS P (2932.774, 290.9253) / Can (1399.546, 290.0) idle / Cart (2810.0, 284.0) 5->5 / mode play / frame 9000\nROUTE PROGRESS P (2997.522, 290.9253) / Can (2782.451, 290.0) windup / Cart (2950.0, 284.0) 6->6 / mode play / frame 10800\nROUTE BEAT mastery: temporary weight P (3191.925, 270.0078) / Can (2905.65, 290.0) stunned / Cart (3230.0, 284.0) 7->7 / mode play / frame 11053\nROUTE STATES: react | knowledge transfer | world affects Can | preserve roof before transport | preserve weight then latch route | return with knowledge | mastery: temporary weight\nROUTE TIME: 198.8 simulated seconds; 7 impacts; 4 stomps\nFOUNDRY FRESH ROUTE PASS: real player inputs, every beat, one persistent Can/Cart, full completion\n"
+      }
+    }
+  ]
+}
