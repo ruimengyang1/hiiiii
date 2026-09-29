@@ -1,74 +1,65 @@
-# Foundry / Future States
+# Can / Useful Danger
 
-One persistent malfunctioning factory. One objective: **escape**. Manipulate a
-predictable charging robot while a Cart, cycling press, weight catwalk and weak
-partition keep affecting the same space.
+A focused four-level puzzle-platformer about learning to manipulate one
+dangerous autonomous Can. The player gains no abilities; their understanding of
+the same readable rules deepens from direction, to force and weight, to timing,
+to multi-state planning.
 
-Open in **Godot 4.7** and run `scenes/foundry.tscn`. The entire yard fits one
-576×324 view. The green exit is visible from spawn. There are no room resets,
-levers, delivery tasks or progress checklist.
+Open the project in Godot and run it. The default launch scene is
+`scenes/kinetic_prototype.tscn`; every level fits one 384×216 screen.
 
 | Action | Keyboard | Gamepad |
 |---|---|---|
 | Move | A/D or arrows | Left stick / D-pad |
-| Jump | Space | A / Cross |
-| Airborne stomp | J / X | X / Square |
-| Rewind whole yard | R | Y / Triangle |
-| Fresh run | Shift+R; R after escape | Y after escape |
-| Pause | Escape | Start |
-| Recall controls | H | — |
+| Jump / start | Space | A / Cross |
+| Downward strike / bounce | J or X | X / Square |
+| Restart current level | R | Y / Triangle |
 
-Can searches autonomously, locks a red charge direction for 0.55 seconds and
-commits at 230 px/s. Descending onto it rebounds automatically; J/X connects
-faster. A rebound during a charge preserves its motion. Ordinary stomp causes
-only 0.38 seconds of stagger. Environmental contact creates a safe, solid,
-heavy shell for 3.4 seconds, shown by green eyes and a shrinking bar.
+## Four-level demo
 
-Cart moves one reversible 100-pixel rail position per impact in about half a
-second. A supports the loft; B supplies nearby bridge weight and catches the
-press; C gives exit-side height while exposing the press and losing weight.
-Ghost roofs show the alternatives. A poor configuration can be reversed.
-Grounded Can can supply the same plate weight. The press's top is rideable,
-its teeth hurt the worker and ground Can, and it keeps cycling.
+1. **Redirect** — where the player stands determines the Can's locked line.
+2. **Weight** — Can force rolls a Boulder onto a button, powering a fan and a
+   visible cargo consequence.
+3. **Timing** — the laser rotates while the Can occupies its rotator. Reaching
+   the sensor grants a visible one-second lock window; bait the Can away during
+   that countdown to hold the angle and raise the exit lift.
+4. **Combine** — Boulder, button, fan, rotator, sensor, and lift overlap without
+   adding a new rule.
 
-Weak material accepts strong force from either direction. Breaking it creates
-a permanent low passage; a physical upper bypass is also valid. Escape checks
-only arrival on the green exit's landing. Death returns the worker quickly
-while preserving world changes. R deliberately restores all starting objects.
+The Can follows a stable search → telegraph/lock → straight charge → impact →
+short recovery loop. Once locked, it never tracks mid-charge. Buttons read
+general heavy mass, the Boulder is movable/heavy/blocking, and beam/sensor
+alignment is geometric. Green mechanisms are active; target ghosts show where
+moving platforms will finish.
 
-[THIRD_REDESIGN_SPEC.md](THIRD_REDESIGN_SPEC.md) describes the short design.
-[THIRD_REDESIGN_REPORT.md](THIRD_REDESIGN_REPORT.md) documents three validated
-plans, tradeoffs, heuristic reversals, metrics, screenshots and limitations.
-Automated expert routes take roughly 6–7 seconds. Human fun, first-time length
-and the 5–7 minute target remain unmeasured; there is no forced delay.
+The first-time play target is approximately 4–5 minutes, but this remains a
+human-playtest target rather than an automated result.
 
-Run `scenes/yard_sandbox.tscn` for the same connected space without escape or
-instructions. Preserved versions:
-
-- `scenes/foundry_second.tscn`: four-arena redesign, checkpoint `2e1ea7d`.
-- `scenes/impact_lab.tscn`: second redesign's isolated core playground.
-- `scenes/foundry_legacy.tscn`: first redesign, checkpoint `340aed6`.
-- `scenes/kinetic_prototype.tscn`: System Link.
-- `scenes/game.tscn`: original Foundry and Relay Shaft.
+[FINAL_DEMO_DESIGN.md](FINAL_DEMO_DESIGN.md) records the verified audit and
+pre-implementation plan. [FINAL_DEMO_REPORT.md](FINAL_DEMO_REPORT.md) contains
+maps, knowledge transfer, reversals, validation, captures, and limitations. The
+seven-level predecessor is preserved at local commit `4a70afd` and documented
+by the earlier `CAN_LEVEL_REDESIGN_*.md` files.
 
 ## Verification
 
 ```sh
-godot --headless --path . --fixed-fps 60 --script res://tests/third_sandbox.gd
-godot --headless --path . --fixed-fps 60 --script res://tests/third_systems.gd
-godot --headless --path . --fixed-fps 60 --script res://tests/third_route.gd
-godot --headless --path . --fixed-fps 60 --script res://tests/third_route.gd -- --ground
-godot --headless --path . --fixed-fps 60 --script res://tests/third_route.gd -- --force
+godot --headless --path . --script res://tests/kinetic.gd
+godot --headless --path . --script res://tests/kinetic_route.gd
 ```
 
-Routes use only player inputs after fresh spawn. System and sandbox probes use
-explicit fixtures. JSON evidence records completion, charges, impacts, rebounds,
-grounding, reversals, resets, deaths, hits, idle and state traces under
-`artifacts/third_redesign/`. Tests prove consistent interactions and completion,
-not enjoyment.
+The system suite covers Can intent/lock/non-tracking, impact and rebound,
+Boulder force/weight, fan behavior, continuous laser duration, sensor, platform,
+and the physical Level 2 chain. The route suite covers four fresh solved states,
+anti-skip exits and jump heights, actual R restart, death recovery, and retained
+progression. These deterministic checks do not prove fun or first-time timing.
 
-With graphics, run `tests/capture_third.gd` for ten staged relationship captures.
-Run `tests/third_route.gd -- --force --capture` for the actual input-only
-signature/fracture/escape captures. Images are in
-`artifacts/third_redesign/screenshots/`. Historical tests target preserved
-scenes and remain runnable.
+Run `tests/capture_kinetic.gd` with graphics to regenerate the fifteen review
+images in `artifacts/final_demo/screenshots/`.
+
+Older prototypes remain available as separate scenes:
+
+- `scenes/foundry.tscn`: persistent factory-yard redesign.
+- `scenes/foundry_second.tscn`: four-arena Foundry redesign.
+- `scenes/foundry_legacy.tscn`: first connected Foundry redesign.
+- `scenes/game.tscn`: original two-stage platformer.

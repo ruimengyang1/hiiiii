@@ -13,6 +13,15 @@ func _ready() -> void:
 	samples["telegraph"] = _make_sound(285.0, 0.28, 0.13, false)
 	samples["switch"] = _make_sound(590.0, 0.22, 0.16, false)
 	samples["alarm"] = _make_sound(185.0, 0.32, 0.15, true)
+	samples["fan"] = _make_sound(245.0, 0.24, 0.12, true)
+	samples["laser"] = _make_sound(430.0, 0.18, 0.14, true)
+	samples["sensor"] = _make_sound(710.0, 0.28, 0.15, false)
+	samples["lock"] = _make_sound(520.0, 0.10, 0.18, false)
+	samples["charge"] = _make_sound(175.0, 0.18, 0.17, true)
+	samples["impact"] = _make_sound(105.0, 0.13, 0.22, true)
+	samples["boulder"] = _make_sound(82.0, 0.19, 0.24, true)
+	samples["rotator"] = _make_sound(360.0, 0.12, 0.13, true)
+	samples["platform"] = _make_sound(620.0, 0.16, 0.14, false)
 
 func play(kind: String) -> void:
 	# Accelerated headless physics does not advance the real-time audio mixer.

@@ -6,73 +6,78 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var level = (load("res://scenes/kinetic_prototype.tscn") as PackedScene).instantiate()
-	root.add_child(level)
-	await physics_frame
-	await physics_frame
-	level._begin_play()
-
-	# Beat 1: a real downward strike on the central threat returns traversal lift.
-	level.ram.state = "stunned"
-	level.ram.state_time = 2.0
-	level.ram.monitoring = false
-	level.player.global_position = level.ram.global_position + Vector2(0, -27)
-	level.player.velocity = Vector2(80, 20)
-	Input.action_press("attack")
-	await physics_frame
-	await physics_frame
-	Input.action_release("attack")
-	_check(level.player.velocity.y < -180.0, "threat becomes a forgiving bounce tool")
-	level.ram.monitoring = true
-
-	# Beats 2-3: use general ram momentum to advance to transfer and circuit stops.
-	await _push_cart(level, 1)
-	_check(level.checkpoint_station == 1, "first passenger dock becomes a nearby rewind point")
-	await _push_cart(level, 1)
-	_check(level.carriage.station_index == 2 and level.circuit_powered, "cart position disables the shared live rail")
-
-	# Beat 4: blindly repeating push-right reveals the cut-off prerequisite.
-	var rejected: bool = not level.carriage.request_station_push(1, 138.0)
-	if rejected:
-		level._on_cart_push_rejected(3)
-	_check(rejected and level.carriage.station_index == 2, "reasonable early heuristic fails without losing the useful state")
-	_check("CUT-OFF" in level.last_event, "failure explains the strategic change instead of hiding a trap")
-	level.safety_switch.receive_strike()
+	var game = (load("res://scenes/kinetic_prototype.tscn") as PackedScene).instantiate()
+	root.add_child(game)
 	await process_frame
-	_check(level.safety_enabled, "player interaction changes the cart's future")
-	await _push_cart(level, 1)
-	_check(level.carriage.station_index == 3 and level.final_switch.armed, "safe bay arms the previously visible ram lock")
+	for index in game.LEVEL_COUNT:
+		game._build_level(index)
+		await process_frame
+		_check(game.mode == "play" and game.level_index == index and game.player.active, "%s fresh spawn is playable" % game.LEVEL_TITLES[index])
+		game.player.global_position = game.goal_position
+		game._update_exit()
+		_check(game.mode == "play", "T/U: %s exit cannot trigger before its visible mechanism route is active" % game.LEVEL_TITLES[index])
+		if index > 0:
+			var required_rise: float = [0.0, 108.0, 108.0, 60.0][index]
+			var normal_jump_rise: float = game.player.JUMP_SPEED * game.player.JUMP_SPEED / (2.0 * game.player.GRAVITY)
+			_check(normal_jump_rise < required_rise, "T: %s critical ledge exceeds ordinary jump height" % game.LEVEL_TITLES[index])
+		_solve_visible_state(game, index)
+		if index == 3:
+			_check(game.pressure.pressed and game.fan.active and game.laser.sensor_active and game.primary_platform.active, "S: Level 4 combines Boulder/Button/Fan with Laser/Sensor/Platform using known rules")
+		game.player.global_position = game.goal_position
+		game._update_exit()
+		_check(game.mode == "transition", "%s accepts physical arrival after its world relationship is solved" % game.LEVEL_TITLES[index])
+		game.completion_ticket += 1
 
-	# Beat 5: ram interaction unlocks the route, then the same cart rule pays off.
-	_check(level.final_switch.position.x < level.carriage.position.x, "armed lock asks the player to bring the ram back before final progress")
-	var ram_return: float = level.final_switch.receive_ram_impact(-138.0)
-	await process_frame
-	_check(level.final_lock_enabled and ram_return > 0.0, "ram lock returns the barrel on the useful cart-pushing side")
-	await _push_cart(level, 1)
-	_check(level.carriage.station_index == 4 and level.npc_arrived, "planned final impact delivers the NPC")
-	level.player.global_position = level.GOAL_POSITION
+	game._build_level(3)
+	var preserved_index: int = game.level_index
+	var before_restart: int = game.completion_ticket
+	Input.action_press("restart")
 	await physics_frame
-	_check(level.mode == "complete", "player meets the delivered NPC to finish the complete route")
-	_check(level.result_label.visible and not level.hint_label.visible and "PLAN QUALITY" in level.result_label.text and "RANK" in level.result_label.text, "completion shows only its strategic rating panel")
+	Input.action_release("restart")
+	await process_frame
+	_check(game.level_index == preserved_index and game.mode == "play" and game.completion_ticket > before_restart, "V: R reconstructs only the active room")
+	game.player.kill()
+	await create_timer(0.5).timeout
+	_check(game.level_index == 3 and game.mode == "play", "W: death restarts the current room without erasing progression")
 
-	level.player.active = false
-	level.ram.set_physics_process(false)
-	level.carriage.set_physics_process(false)
-	level.free()
+	game._finish_demo()
+	_check(game.mode == "complete" and game.result_panel.visible and "4 LEVELS COMPLETE" in game.result_label.text, "four-level demo ends with a clear mastery result")
+	game.player.active = false
+	game.can.set_physics_process(false)
+	game.free()
 	await process_frame
 	if failures.is_empty():
-		print("SYSTEMIC ROUTE PASS: bounce, cart circuit, heuristic break, cut-off, ram lock, NPC delivery")
+		print("FINAL DEMO ROUTE PASS: P–W — four fresh solved states, anti-skip exits, restart, and progression retention")
 		quit(0)
 	else:
 		for failure in failures:
-			printerr("SYSTEMIC ROUTE FAIL: ", failure)
+			printerr("FINAL DEMO ROUTE FAIL: ", failure)
 		quit(1)
 
-func _push_cart(level: Node, direction: int) -> void:
-	var accepted: bool = level.carriage.request_station_push(direction, 138.0)
-	_check(accepted, "planned ram impact is accepted at station %d" % level.carriage.station_index)
-	for _frame in 40:
-		await physics_frame
+func _solve_visible_state(game: Node, index: int) -> void:
+	match index:
+		0:
+			game.target_a.set_active(true)
+			game.target_b.set_active(true)
+			game._update_level_1()
+		1:
+			game.pressure.set_pressed(true)
+			game.cargo_platform.position = game.cargo_platform.active_position
+			game._update_level_2()
+		2:
+			game.laser.sensor_active = true
+			game.primary_platform.set_active(true)
+			game.primary_platform.sync_to_physics = false
+			game.primary_platform.position = game.primary_platform.active_position
+			game._update_level_3(0.0)
+		3:
+			game.pressure.set_pressed(true)
+			game.laser.sensor_active = true
+			game.l4_lift_delay = 0.0
+			game.primary_platform.set_active(true)
+			game.primary_platform.sync_to_physics = false
+			game.primary_platform.position = game.primary_platform.active_position
+			game._update_level_4(0.0)
 
 func _check(condition: bool, message: String) -> void:
 	if not condition:
